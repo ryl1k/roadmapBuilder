@@ -46,7 +46,7 @@
 - **Services**: `ScoringService` (оцінка релевантності), `PrereqGraph` (перевірка залежностей), `GreedyRecommender`.
 - **REST API**: `server.cpp` — маршрути `/api/...` для доступу до логіки.
 
-Докладніше див. `docs/ARCHITECTURE.md` та `docs/STRUCTURE.md`.
+Докладніше див. `Architecture.md` та `Structure.md`.
 
 ---
 
