@@ -5,11 +5,11 @@
 ---
 
 <p align="center">
-  <a href="docs/Architecture.md">🧩 Architecture</a> •
-  <a href="docs/Backend_Structure.md">⚙️ Backend</a> •
-  <a href="docs/Frontend_Structure.md">💻 Frontend</a> •
-  <a href="docs/API_Reference.md">📡 API</a> •
-  <a href="docs/Build_Instructions.md">🧠 Build</a>
+  <a href="docs/architecture.md">🧩 Architecture</a> •
+  <a href="docs/backend_structure.md">⚙️ Backend</a> •
+  <a href="docs/frontend_structure.md">💻 Frontend</a> •
+  <a href="docs/api_reference.md">📡 API</a> •
+  <a href="docs/build_instructions.md">🧠 Build</a>
 </p>
 
 ---
