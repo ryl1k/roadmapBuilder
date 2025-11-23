@@ -31,7 +31,7 @@ public:
 
 	// Setters
 
-	void setId(int _id) { id = newId; }
+	void setId(int _id) { id = _id; }
 	void setTitle(const std::string& _title) { title = _title; }
 	void setDomain(const std::string& _domain) { domain = _domain; }
 	void setLevel(const std::string& _level) { level = _level; }
