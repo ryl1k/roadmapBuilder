@@ -139,11 +139,17 @@
     <ClCompile Include="src\recommender\greedy.cpp" />
     <ClCompile Include="src\services\scoring.cpp" />
     <ClCompile Include="src\storage\json_storage.cpp" />
+    <ClCompile Include="src\storage\sqlite_storage.cpp" />
     <ClCompile Include="src\сatalog\json_catalog.cpp" />
+    <ClCompile Include="src\catalog\sqlite_catalog.cpp" />
+    <ClCompile Include="third_party\sqlite3.c">
+      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\catalog\icatalog.hpp" />
     <ClInclude Include="include\catalog\json_catalog.hpp" />
+    <ClInclude Include="include\catalog\sqlite_catalog.hpp" />
     <ClInclude Include="include\models\course.hpp" />
     <ClInclude Include="include\models\plan.hpp" />
     <ClInclude Include="include\models\user_profile.hpp" />
@@ -152,9 +158,11 @@
     <ClInclude Include="include\services\scoring.hpp" />
     <ClInclude Include="include\storage\istorage.hpp" />
     <ClInclude Include="include\storage\json_storage.hpp" />
+    <ClInclude Include="include\storage\sqlite_storage.hpp" />
     <ClInclude Include="include\utils\json_helpers.hpp" />
     <ClInclude Include="third_party\crow_all.h" />
     <ClInclude Include="third_party\json.hpp" />
+    <ClInclude Include="third_party\sqlite3.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -22,8 +22,8 @@
 #endif
 
 #include "../third_party/json.hpp"
-#include "../include/catalog/json_catalog.hpp"
-#include "../include/storage/json_storage.hpp"
+#include "../include/catalog/sqlite_catalog.hpp"
+#include "../include/storage/sqlite_storage.hpp"
 #include "../include/recommender/greedy.hpp"
 #include "../include/utils/json_helpers.hpp"
 #include <iostream>
@@ -31,21 +31,58 @@
 using json = nlohmann::json;
 
 int main() {
-	crow::SimpleApp app;
-	JsonCatalog catalog("data/courses.json");
-	JsonStorage storage("data/plans/");
-	GreedyRecommender recommender;
+	try {
+		crow::App<crow::CORSHandler> app;
+
+		std::cout << "Starting Course Recommendation Platform..." << std::endl;
+
+		// Initialize SQLite database
+		std::cout << "Initializing database..." << std::endl;
+		SqliteCatalog catalog("data/roadmap.db");
+		SqliteStorage storage("data/roadmap.db");
+
+		// Import courses from JSON on first run
+		std::cout << "Checking courses in database..." << std::endl;
+		try {
+			auto courses = catalog.getAll();
+			if (courses.empty()) {
+				std::cout << "Database empty, importing from courses.json..." << std::endl;
+				catalog.importFromJson("data/courses.json");
+				std::cout << "Successfully imported " << catalog.getAll().size() << " courses" << std::endl;
+			} else {
+				std::cout << "Found " << courses.size() << " courses in database" << std::endl;
+			}
+		} catch (const std::exception& e) {
+			std::cerr << "Error loading courses: " << e.what() << std::endl;
+			std::cout << "Attempting to import from courses.json..." << std::endl;
+			catalog.importFromJson("data/courses.json");
+			std::cout << "Database initialized from courses.json" << std::endl;
+		}
+
+		GreedyRecommender recommender;
+
+	// Cache courses in memory for better performance
+	std::cout << "Loading courses into cache..." << std::endl;
+	auto cachedCourses = catalog.getAll();
+	std::cout << "Cached " << cachedCourses.size() << " courses" << std::endl;
 
 	// Define HTTP method constants to avoid macro conflicts
 	constexpr auto HTTP_GET = crow::HTTPMethod::Get;
 	constexpr auto HTTP_POST = crow::HTTPMethod::Post;
 	constexpr auto HTTP_DELETE = crow::HTTPMethod::Delete;
 
+	// Enable CORS for all routes
+	auto& cors = app.get_middleware<crow::CORSHandler>();
+	cors
+		.global()
+		.origin("http://localhost:8000")
+		.methods(HTTP_GET, HTTP_POST, HTTP_DELETE)
+		.allow_credentials();
+
 	// GET all courses
 	CROW_ROUTE(app, "/api/courses").methods(HTTP_GET)
 		([&]() {
-			auto courses = catalog.getAll();
-			json response = coursesToJson(courses);
+			json response = coursesToJson(cachedCourses);
 			return crow::response(response.dump());
 		});
 
@@ -55,7 +92,7 @@ int main() {
 			try {
 				auto data = json::parse(req.body);
 				UserProfile profile = jsonToProfile(data["profile"]);
-				auto plan = recommender.makePlan(profile, catalog.getAll());
+				auto plan = recommender.makePlan(profile, cachedCourses);
 				storage.savePlan(profile.getUserId(), plan);
 				json response = planToJson(plan);
 				return crow::response(200, response.dump());
@@ -127,6 +164,20 @@ int main() {
 			return crow::response(200, response.dump());
 		});
 
-	std::cout << "Server starting on port 8080..." << std::endl;
-	app.port(8080).multithreaded().run();
+		std::cout << "Server starting on port 8080..." << std::endl;
+		app.port(8080).multithreaded().run();
+
+	} catch (const std::exception& e) {
+		std::cerr << "FATAL ERROR: " << e.what() << std::endl;
+		std::cerr << "Press Enter to exit..." << std::endl;
+		std::cin.get();
+		return 1;
+	} catch (...) {
+		std::cerr << "FATAL ERROR: Unknown exception" << std::endl;
+		std::cerr << "Press Enter to exit..." << std::endl;
+		std::cin.get();
+		return 2;
+	}
+
+	return 0;
 }
