@@ -1,0 +1,178 @@
+{% extends 'recommendations/base.html' %}
+
+{% block title %}Learning Plan - Course Recommendation Platform{% endblock %}
+
+{% block extra_styles %}
+<style>
+    .plan-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+    }
+
+    .plan-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .stat-box {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 1rem;
+        border-radius: 4px;
+    }
+
+    .stat-box h4 {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-box p {
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+
+    .course-step {
+        background: white;
+        border-left: 4px solid #667eea;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .course-step:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .step-number {
+        display: inline-block;
+        background: #667eea;
+        color: white;
+        width: 32px;
+        height: 32px;
+        line-height: 32px;
+        text-align: center;
+        border-radius: 50%;
+        font-weight: bold;
+        margin-right: 1rem;
+    }
+
+    .course-title {
+        font-size: 1.3rem;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+
+    .course-meta {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        margin-top: 0.5rem;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    .badge-beginner { background: #d4edda; color: #155724; }
+    .badge-intermediate { background: #fff3cd; color: #856404; }
+    .badge-advanced { background: #f8d7da; color: #721c24; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="plan-header">
+    <h2>Your Personalized Learning Plan</h2>
+    {% if profile %}
+    <div class="plan-summary">
+        <div class="stat-box">
+            <h4>Target Domain</h4>
+            <p>{{ profile.targetDomain }}</p>
+        </div>
+        <div class="stat-box">
+            <h4>Current Level</h4>
+            <p>{{ profile.currentLevel }}</p>
+        </div>
+        <div class="stat-box">
+            <h4>Total Hours</h4>
+            <p>{{ plan.totalHours }}</p>
+        </div>
+        <div class="stat-box">
+            <h4>Number of Courses</h4>
+            <p>{{ plan.steps|length }}</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% if plan.steps %}
+<div class="card">
+    <h3 style="margin-bottom: 1.5rem;">Course Sequence</h3>
+
+    {% for step in plan.steps %}
+    <div class="course-step">
+        <div style="display: flex; align-items: start;">
+            <span class="step-number">{{ step.step }}</span>
+            <div style="flex: 1;">
+                <h4 class="course-title">{{ step.courseTitle|default:"Course #"|add:step.courseId|stringformat:"s" }}</h4>
+
+                <div class="course-meta">
+                    {% if step.courseLevel %}
+                    <span class="badge badge-{{ step.courseLevel|lower }}">{{ step.courseLevel }}</span>
+                    {% endif %}
+
+                    {% if step.courseDomain %}
+                    <span class="meta-item">
+                        <strong>Domain:</strong> {{ step.courseDomain }}
+                    </span>
+                    {% endif %}
+
+                    <span class="meta-item">
+                        <strong>Duration:</strong> {{ step.hours }} hours
+                    </span>
+
+                    <span class="meta-item">
+                        <strong>Course ID:</strong> #{{ step.courseId }}
+                    </span>
+                </div>
+
+                {% if step.note %}
+                <p style="margin-top: 0.75rem; color: #666; font-size: 0.9rem;">
+                    {{ step.note }}
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card">
+    <p>No courses in this plan. Try adjusting your preferences.</p>
+</div>
+{% endif %}
+
+<div style="margin-top: 2rem;">
+    <a href="{% url 'recommendations:index' %}" class="btn">Create Another Plan</a>
+    <a href="{% url 'recommendations:catalog' %}" class="btn" style="background: #6c757d; margin-left: 1rem;">Browse Courses</a>
+</div>
+{% endblock %}
