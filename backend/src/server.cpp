@@ -1,9 +1,32 @@
+// Define before any Windows headers to prevent macro pollution
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+
 #include "../third_party/crow_all.h"
+
+// Undefine Windows HTTP macros that conflict with Crow
+#if defined(GET)
+#undef GET
+#endif
+#if defined(POST)
+#undef POST
+#endif
+#if defined(PUT)
+#undef PUT
+#endif
+#if defined(DELETE)
+#undef DELETE
+#endif
+#if defined(PATCH)
+#undef PATCH
+#endif
+
 #include "../third_party/json.hpp"
 #include "../include/catalog/json_catalog.hpp"
 #include "../include/storage/json_storage.hpp"
 #include "../include/recommender/greedy.hpp"
 #include "../include/utils/json_helpers.hpp"
+#include <iostream>
 
 using json = nlohmann::json;
 
@@ -13,8 +36,13 @@ int main() {
 	JsonStorage storage("data/plans/");
 	GreedyRecommender recommender;
 
+	// Define HTTP method constants to avoid macro conflicts
+	constexpr auto HTTP_GET = crow::HTTPMethod::Get;
+	constexpr auto HTTP_POST = crow::HTTPMethod::Post;
+	constexpr auto HTTP_DELETE = crow::HTTPMethod::Delete;
+
 	// GET all courses
-	CROW_ROUTE(app, "/api/courses").methods(crow::HTTPMethod::GET)
+	CROW_ROUTE(app, "/api/courses").methods(HTTP_GET)
 		([&]() {
 			auto courses = catalog.getAll();
 			json response = coursesToJson(courses);
@@ -22,7 +50,7 @@ int main() {
 		});
 
 	// POST recommendation request
-	CROW_ROUTE(app, "/api/recommendations").methods(crow::HTTPMethod::POST)
+	CROW_ROUTE(app, "/api/recommendations").methods(HTTP_POST)
 		([&](const crow::request& req) {
 			try {
 				auto data = json::parse(req.body);
@@ -38,7 +66,7 @@ int main() {
 		});
 
 	// GET plan by userId
-	CROW_ROUTE(app, "/api/plans/<int>").methods(crow::HTTPMethod::GET)
+	CROW_ROUTE(app, "/api/plans/<int>").methods(HTTP_GET)
 		([&](int userId) {
 			auto plan = storage.loadPlan(userId);
 			if (plan.has_value()) {
@@ -51,7 +79,7 @@ int main() {
 		});
 
 	// POST save plan
-	CROW_ROUTE(app, "/api/plans/<int>").methods(crow::HTTPMethod::POST)
+	CROW_ROUTE(app, "/api/plans/<int>").methods(HTTP_POST)
 		([&](const crow::request& req, int userId) {
 			try {
 				auto data = json::parse(req.body);
@@ -80,7 +108,7 @@ int main() {
 		});
 
 	// DELETE plan
-	CROW_ROUTE(app, "/api/plans/<int>").methods(crow::HTTPMethod::DELETE)
+	CROW_ROUTE(app, "/api/plans/<int>").methods(HTTP_DELETE)
 		([&](int userId) {
 			std::string filename = "data/plans/plan_" + std::to_string(userId) + ".json";
 			if (std::remove(filename.c_str()) == 0) {
@@ -93,7 +121,7 @@ int main() {
 		});
 
 	// Health check
-	CROW_ROUTE(app, "/api/health").methods(crow::HTTPMethod::GET)
+	CROW_ROUTE(app, "/api/health").methods(HTTP_GET)
 		([]() {
 			json response = {{"status", "ok"}, {"version", "1.0"}};
 			return crow::response(200, response.dump());
