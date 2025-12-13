@@ -37,7 +37,7 @@ int main() {
 		std::cout << "Starting Course Recommendation Platform..." << std::endl;
 
 		// PostgreSQL connection string
-		std::string connStr = "host=localhost port=5432 dbname=roadmap user=roadmap_user password=roadmap_pass";
+		std::string connStr = "host=localhost port=5432 dbname=roadmap user=postgres password=admin";
 
 		// Initialize PostgreSQL database
 		std::cout << "Connecting to PostgreSQL..." << std::endl;
