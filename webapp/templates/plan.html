@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Your Learning Plan - Course Recommendation Platform{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto mt-10 fade-in" x-data="planData()" x-init="loadPlan()">
+    <div x-show="!plan" class="text-center py-20">
+        <div class="text-6xl mb-4">📚</div>
+        <p class="text-gray-400 text-lg mb-6">No plan found</p>
+        <a href="/recommend" class="inline-block px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg transition">
+            Create a Plan
+        </a>
+    </div>
+
+    <div x-show="plan" class="space-y-6">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-purple-600 to-pink-600 p-8 rounded-2xl text-white">
+            <div class="flex justify-between items-start mb-4">
+                <h1 class="text-4xl font-bold">Your Learning Plan</h1>
+                <span x-show="algorithmUsed === 'ai'" class="px-4 py-2 bg-white/20 backdrop-blur rounded-full text-sm font-semibold">
+                    🤖 AI-Generated
+                </span>
+                <span x-show="algorithmUsed === 'greedy'" class="px-4 py-2 bg-white/20 backdrop-blur rounded-full text-sm font-semibold">
+                    ⚡ Greedy Algorithm
+                </span>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                <div class="bg-white/10 backdrop-blur p-4 rounded-xl">
+                    <div class="text-sm opacity-90">Domain</div>
+                    <div class="text-xl font-bold" x-text="profile?.targetDomain"></div>
+                </div>
+                <div class="bg-white/10 backdrop-blur p-4 rounded-xl">
+                    <div class="text-sm opacity-90">Level</div>
+                    <div class="text-xl font-bold" x-text="profile?.currentLevel"></div>
+                </div>
+                <div class="bg-white/10 backdrop-blur p-4 rounded-xl">
+                    <div class="text-sm opacity-90">Total Hours</div>
+                    <div class="text-xl font-bold" x-text="plan?.totalHours"></div>
+                </div>
+                <div class="bg-white/10 backdrop-blur p-4 rounded-xl">
+                    <div class="text-sm opacity-90">Courses</div>
+                    <div class="text-xl font-bold" x-text="plan?.steps?.length"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Reasoning -->
+        <div x-show="aiReasoning" class="bg-blue-600/20 border border-blue-500/30 p-6 rounded-2xl">
+            <h3 class="text-xl font-bold mb-3">💡 AI Recommendation Strategy</h3>
+            <p class="text-gray-300" x-text="aiReasoning"></p>
+        </div>
+
+        <!-- Course Steps -->
+        <div class="space-y-4">
+            <h2 class="text-2xl font-bold">Course Sequence</h2>
+
+            <template x-for="(step, index) in plan?.steps" :key="index">
+                <div class="bg-gray-800/50 backdrop-blur border-l-4 border-purple-500 p-6 rounded-xl hover:bg-gray-800/70 transition">
+                    <div class="flex items-start gap-4">
+                        <div class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-xl font-bold"
+                             x-text="step.step">
+                        </div>
+
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold mb-2" x-text="getCourseTitle(step.courseId)"></h3>
+
+                            <div class="flex flex-wrap gap-3 mb-3">
+                                <span class="px-3 py-1 bg-purple-600/30 rounded-full text-sm" x-text="getCourseLevel(step.courseId)"></span>
+                                <span class="px-3 py-1 bg-blue-600/30 rounded-full text-sm" x-text="getCourseDomain(step.courseId)"></span>
+                                <span class="px-3 py-1 bg-pink-600/30 rounded-full text-sm" x-text="step.hours + ' hours'"></span>
+                                <span class="px-3 py-1 bg-gray-700 rounded-full text-sm" x-text="'#' + step.courseId"></span>
+                            </div>
+
+                            <p x-show="step.note" class="text-gray-400 text-sm" x-text="step.note"></p>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex gap-4">
+            <a href="/recommend" class="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg transition">
+                Create Another Plan
+            </a>
+            <a href="/catalog" class="px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition">
+                Browse Courses
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+function planData() {
+    return {
+        plan: null,
+        profile: null,
+        algorithmUsed: 'greedy',
+        aiReasoning: null,
+        courses: [],
+
+        loadPlan() {
+            const data = sessionStorage.getItem('currentPlan');
+            if (!data) return;
+
+            const parsed = JSON.parse(data);
+            this.plan = parsed.plan;
+            this.profile = parsed.profile;
+            this.algorithmUsed = parsed.algorithmUsed;
+            this.aiReasoning = parsed.aiReasoning;
+            this.courses = parsed.courses || [];
+        },
+
+        getCourseTitle(courseId) {
+            const course = this.courses.find(c => c.id === courseId);
+            return course?.title || 'Unknown Course';
+        },
+
+        getCourseLevel(courseId) {
+            const course = this.courses.find(c => c.id === courseId);
+            return course?.level || '';
+        },
+
+        getCourseDomain(courseId) {
+            const course = this.courses.find(c => c.id === courseId);
+            return course?.domain || '';
+        }
+    }
+}
+</script>
+{% endblock %}

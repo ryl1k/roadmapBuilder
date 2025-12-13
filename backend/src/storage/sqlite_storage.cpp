@@ -1,6 +1,10 @@
 #include "../../include/storage/sqlite_storage.hpp"
+#include "../../third_party/json.hpp"
 #include <stdexcept>
 #include <sstream>
+#include <functional>
+
+using json = nlohmann::json;
 
 SqliteStorage::SqliteStorage(const std::string& dbPath) : dbPath(dbPath), db(nullptr) {
 	int rc = sqlite3_open(dbPath.c_str(), &db);
@@ -18,6 +22,14 @@ SqliteStorage::~SqliteStorage() {
 
 void SqliteStorage::createTables() {
 	const char* sql = R"(
+		CREATE TABLE IF NOT EXISTS users (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			username TEXT UNIQUE NOT NULL,
+			email TEXT UNIQUE NOT NULL,
+			password_hash TEXT NOT NULL,
+			created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+		);
+
 		CREATE TABLE IF NOT EXISTS plans (
 			user_id INTEGER PRIMARY KEY,
 			total_hours INTEGER NOT NULL,
@@ -125,4 +137,76 @@ std::optional<Plan> SqliteStorage::loadPlan(int userId) {
 	}
 
 	return plan;
+}
+
+std::string SqliteStorage::hashPassword(const std::string& password) {
+	// Simple hash for demo (use bcrypt in production)
+	std::hash<std::string> hasher;
+	return std::to_string(hasher(password));
+}
+
+void SqliteStorage::saveUser(const std::string& username, const std::string& email, const std::string& password) {
+	const char* sql = "INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)";
+	sqlite3_stmt* stmt;
+
+	if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+		sqlite3_bind_text(stmt, 1, username.c_str(), -1, SQLITE_TRANSIENT);
+		sqlite3_bind_text(stmt, 2, email.c_str(), -1, SQLITE_TRANSIENT);
+		std::string hash = hashPassword(password);
+		sqlite3_bind_text(stmt, 3, hash.c_str(), -1, SQLITE_TRANSIENT);
+
+		if (sqlite3_step(stmt) != SQLITE_DONE) {
+			sqlite3_finalize(stmt);
+			throw std::runtime_error("Failed to create user");
+		}
+		sqlite3_finalize(stmt);
+	} else {
+		throw std::runtime_error("Failed to prepare statement");
+	}
+}
+
+bool SqliteStorage::validateUser(const std::string& username, const std::string& password) {
+	const char* sql = "SELECT password_hash FROM users WHERE username = ?";
+	sqlite3_stmt* stmt;
+
+	if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+		return false;
+	}
+
+	sqlite3_bind_text(stmt, 1, username.c_str(), -1, SQLITE_TRANSIENT);
+
+	if (sqlite3_step(stmt) != SQLITE_ROW) {
+		sqlite3_finalize(stmt);
+		return false;
+	}
+
+	std::string storedHash = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+	sqlite3_finalize(stmt);
+
+	return storedHash == hashPassword(password);
+}
+
+std::optional<json> SqliteStorage::getUser(const std::string& username) {
+	const char* sql = "SELECT id, username, email FROM users WHERE username = ?";
+	sqlite3_stmt* stmt;
+
+	if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+		return std::nullopt;
+	}
+
+	sqlite3_bind_text(stmt, 1, username.c_str(), -1, SQLITE_TRANSIENT);
+
+	if (sqlite3_step(stmt) != SQLITE_ROW) {
+		sqlite3_finalize(stmt);
+		return std::nullopt;
+	}
+
+	json user = {
+		{"id", sqlite3_column_int(stmt, 0)},
+		{"username", reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1))},
+		{"email", reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2))}
+	};
+
+	sqlite3_finalize(stmt);
+	return user;
 }

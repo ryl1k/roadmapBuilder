@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Get Recommendations - Course Recommendation Platform{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto mt-10 fade-in" x-data="recommendData()" x-init="loadCourses()">
+    <div class="bg-gray-800/50 backdrop-blur p-8 rounded-2xl border border-gray-700">
+        <h2 class="text-3xl font-bold mb-2 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            Create Your Learning Plan
+        </h2>
+        <p class="text-gray-400 mb-8">Tell us about your goals and we'll create a personalized course plan for you.</p>
+
+        <form @submit.prevent="generatePlan">
+            <!-- Algorithm Selection -->
+            <div class="mb-8">
+                <label class="block text-sm font-medium mb-3">Choose Algorithm</label>
+                <div class="grid grid-cols-2 gap-4">
+                    <label class="relative cursor-pointer">
+                        <input type="radio" name="algorithm" value="greedy" checked class="peer sr-only">
+                        <div class="p-6 bg-gray-900 border-2 border-gray-700 rounded-xl peer-checked:border-purple-500 peer-checked:bg-purple-600/10 transition">
+                            <div class="text-3xl mb-2">⚡</div>
+                            <div class="font-bold mb-1">Greedy</div>
+                            <div class="text-sm text-gray-400">Fast & deterministic</div>
+                        </div>
+                    </label>
+                    <label class="relative cursor-pointer">
+                        <input type="radio" name="algorithm" value="ai" class="peer sr-only">
+                        <div class="p-6 bg-gray-900 border-2 border-gray-700 rounded-xl peer-checked:border-pink-500 peer-checked:bg-pink-600/10 transition">
+                            <div class="text-3xl mb-2">🤖</div>
+                            <div class="font-bold mb-1">AI-Powered</div>
+                            <div class="text-sm text-gray-400">Smart & personalized</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="space-y-5">
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Target Domain</label>
+                        <select name="targetDomain" required
+                                class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:border-purple-500 outline-none">
+                            <option value="">Select domain...</option>
+                            <template x-for="domain in domains" :key="domain">
+                                <option :value="domain" x-text="domain"></option>
+                            </template>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Current Level</label>
+                        <select name="currentLevel" required
+                                class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:border-purple-500 outline-none">
+                            <option value="Beginner">Beginner</option>
+                            <option value="Intermediate">Intermediate</option>
+                            <option value="Advanced">Advanced</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Interests (comma-separated)</label>
+                    <input type="text" name="interests" required placeholder="e.g., python, machine-learning, web"
+                           class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:border-purple-500 outline-none">
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Hours Per Week</label>
+                        <input type="number" name="hoursPerWeek" value="10" min="1" max="40" required
+                               class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:border-purple-500 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Deadline (weeks)</label>
+                        <input type="number" name="deadlineWeeks" value="12" min="1" max="52" required
+                               class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:border-purple-500 outline-none">
+                    </div>
+                </div>
+
+                <div id="error-message" class="hidden p-4 bg-red-500/20 border border-red-500 rounded-lg text-red-300"></div>
+
+                <button type="submit" :disabled="loading"
+                        class="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg font-semibold text-lg hover:scale-105 transition transform disabled:opacity-50">
+                    <span x-show="!loading">✨ Generate My Plan</span>
+                    <span x-show="loading">🔮 Creating your plan...</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function recommendData() {
+    return {
+        loading: false,
+        courses: [],
+        domains: [],
+
+        async loadCourses() {
+            try {
+                const response = await fetch('{{ backend_url }}/courses');
+                this.courses = await response.json();
+                this.domains = [...new Set(this.courses.map(c => c.domain))];
+            } catch (err) {
+                console.error('Failed to load courses:', err);
+            }
+        },
+
+        async generatePlan(e) {
+            const form = e.target;
+            const formData = new FormData(form);
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.classList.add('hidden');
+
+            const useAi = formData.get('algorithm') === 'ai';
+            const profile = {
+                userId: parseInt(localStorage.getItem('userId') || '1'),
+                targetDomain: formData.get('targetDomain'),
+                currentLevel: formData.get('currentLevel'),
+                interests: formData.get('interests').split(',').map(i => i.trim()),
+                hoursPerWeek: parseInt(formData.get('hoursPerWeek')),
+                deadlineWeeks: parseInt(formData.get('deadlineWeeks'))
+            };
+
+            this.loading = true;
+
+            try {
+                let plan = null;
+                let algorithmUsed = 'greedy';
+                let aiReasoning = null;
+
+                // Try AI if selected
+                if (useAi) {
+                    try {
+                        const aiResponse = await fetch('{{ ai_url }}/api/ai-recommendations', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ profile, courses: this.courses })
+                        });
+
+                        if (aiResponse.ok) {
+                            const data = await aiResponse.json();
+                            plan = data;
+                            algorithmUsed = 'ai';
+                            aiReasoning = data.reasoning;
+                        }
+                    } catch (err) {
+                        console.log('AI failed, falling back to greedy');
+                    }
+                }
+
+                // Fallback to greedy
+                if (!plan) {
+                    const response = await fetch('{{ backend_url }}/recommendations', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ profile })
+                    });
+
+                    if (!response.ok) throw new Error('Failed to generate plan');
+                    plan = await response.json();
+                }
+
+                // Store and redirect
+                sessionStorage.setItem('currentPlan', JSON.stringify({
+                    plan,
+                    profile,
+                    algorithmUsed,
+                    aiReasoning,
+                    courses: this.courses
+                }));
+
+                window.location.href = '/plan';
+
+            } catch (err) {
+                errorDiv.textContent = err.message || 'Failed to generate plan. Please try again.';
+                errorDiv.classList.remove('hidden');
+            } finally {
+                this.loading = false;
+            }
+        }
+    }
+}
+</script>
+{% endblock %}

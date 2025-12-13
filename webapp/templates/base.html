@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Course Recommendation Platform{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 min-h-screen text-white" x-data="{ darkMode: true, user: localStorage.getItem('user') }">
+    <nav class="bg-gray-900/50 backdrop-blur-lg border-b border-gray-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center space-x-8">
+                    <a href="/" class="flex items-center space-x-2">
+                        <span class="text-3xl">🎓</span>
+                        <span class="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                            CourseRec
+                        </span>
+                    </a>
+                    <div class="hidden md:flex space-x-4">
+                        <a href="/" class="px-3 py-2 rounded-lg hover:bg-purple-500/20 transition">Home</a>
+                        <a href="/catalog" class="px-3 py-2 rounded-lg hover:bg-purple-500/20 transition">Courses</a>
+                        <a href="/recommend" class="px-3 py-2 rounded-lg hover:bg-purple-500/20 transition">Get Plan</a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <template x-if="!user">
+                        <div class="flex space-x-2">
+                            <a href="/login" class="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 transition">Login</a>
+                            <a href="/register" class="px-4 py-2 rounded-lg bg-pink-600 hover:bg-pink-700 transition">Sign Up</a>
+                        </div>
+                    </template>
+                    <template x-if="user">
+                        <div class="flex items-center space-x-3">
+                            <a href="/profile" class="px-3 py-2 rounded-lg hover:bg-purple-500/20 transition" x-text="JSON.parse(user).username"></a>
+                            <button @click="localStorage.removeItem('user'); localStorage.removeItem('token'); user = null; window.location.href = '/'"
+                                    class="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 transition">
+                                Logout
+                            </button>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    <script>
+        const backendUrl = "{{ backend_url }}";
+        const aiUrl = "{{ ai_url }}";
+
+        // Auto-inject token into requests
+        document.body.addEventListener('htmx:configRequest', (event) => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                event.detail.headers['Authorization'] = 'Bearer ' + token;
+            }
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

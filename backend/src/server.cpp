@@ -157,6 +157,77 @@ int main() {
 			}
 		});
 
+	// Auth endpoints
+	CROW_ROUTE(app, "/api/auth/register").methods(HTTP_POST)
+		([&](const crow::request& req) {
+			try {
+				auto data = json::parse(req.body);
+				std::string username = data["username"];
+				std::string email = data["email"];
+				std::string password = data["password"];
+
+				// Simple auth - store in database
+				storage.saveUser(username, email, password);
+
+				json response = {
+					{"success", true},
+					{"username", username},
+					{"token", username} // Simple token for demo
+				};
+				return crow::response(200, response.dump());
+			} catch (const std::exception& e) {
+				json error = {{"error", e.what()}};
+				return crow::response(400, error.dump());
+			}
+		});
+
+	CROW_ROUTE(app, "/api/auth/login").methods(HTTP_POST)
+		([&](const crow::request& req) {
+			try {
+				auto data = json::parse(req.body);
+				std::string username = data["username"];
+				std::string password = data["password"];
+
+				// Simple auth - validate from database
+				bool valid = storage.validateUser(username, password);
+
+				if (valid) {
+					json response = {
+						{"success", true},
+						{"username", username},
+						{"token", username}
+					};
+					return crow::response(200, response.dump());
+				} else {
+					json error = {{"error", "Invalid credentials"}};
+					return crow::response(401, error.dump());
+				}
+			} catch (const std::exception& e) {
+				json error = {{"error", e.what()}};
+				return crow::response(400, error.dump());
+			}
+		});
+
+	CROW_ROUTE(app, "/api/auth/me").methods(HTTP_GET)
+		([&](const crow::request& req) {
+			auto token = req.get_header_value("Authorization");
+			if (token.empty()) {
+				json error = {{"error", "No token provided"}};
+				return crow::response(401, error.dump());
+			}
+
+			// Simple validation
+			std::string username = token.substr(token.find(" ") + 1);
+			auto user = storage.getUser(username);
+
+			if (user.has_value()) {
+				return crow::response(200, user.value().dump());
+			} else {
+				json error = {{"error", "Invalid token"}};
+				return crow::response(401, error.dump());
+			}
+		});
+
 	// Health check
 	CROW_ROUTE(app, "/api/health").methods(HTTP_GET)
 		([]() {

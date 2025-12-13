@@ -1,0 +1,1 @@
+# FastAPI Course Recommendation Platform
