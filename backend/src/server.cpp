@@ -22,8 +22,8 @@
 #endif
 
 #include "../third_party/json.hpp"
-#include "../include/catalog/sqlite_catalog.hpp"
-#include "../include/storage/sqlite_storage.hpp"
+#include "../include/catalog/postgres_catalog.hpp"
+#include "../include/storage/postgres_storage.hpp"
 #include "../include/recommender/greedy.hpp"
 #include "../include/utils/json_helpers.hpp"
 #include <iostream>
@@ -36,10 +36,13 @@ int main() {
 
 		std::cout << "Starting Course Recommendation Platform..." << std::endl;
 
-		// Initialize SQLite database
-		std::cout << "Initializing database..." << std::endl;
-		SqliteCatalog catalog("data/roadmap.db");
-		SqliteStorage storage("data/roadmap.db");
+		// PostgreSQL connection string
+		std::string connStr = "host=localhost port=5432 dbname=roadmap user=roadmap_user password=roadmap_pass";
+
+		// Initialize PostgreSQL database
+		std::cout << "Connecting to PostgreSQL..." << std::endl;
+		PostgresCatalog catalog(connStr);
+		PostgresStorage storage(connStr);
 
 		// Import courses from JSON on first run
 		std::cout << "Checking courses in database..." << std::endl;
