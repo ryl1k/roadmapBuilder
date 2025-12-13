@@ -33,6 +33,47 @@
             color: #333;
             background: #f5f5f5;
             min-height: 100vh;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        body.dark-mode {
+            background: #1a1a2e;
+            color: #eee;
+        }
+
+        body.dark-mode .card {
+            background: #16213e;
+            border-color: rgba(102, 126, 234, 0.3);
+        }
+
+        body.dark-mode nav {
+            background: #16213e;
+        }
+
+        body.dark-mode .form-group input,
+        body.dark-mode .form-group select {
+            background: #0f3460;
+            color: #eee;
+            border-color: #533483;
+        }
+
+        body.dark-mode .form-group input:focus,
+        body.dark-mode .form-group select:focus {
+            background: #16213e;
+        }
+
+        body.dark-mode footer {
+            background: #16213e;
+            color: #aaa;
+        }
+
+        body.dark-mode .course-step {
+            background: #0f3460;
+            border-left-color: #764ba2;
+        }
+
+        body.dark-mode .course-title {
+            color: #eee;
         }
 
         .container {
@@ -224,10 +265,122 @@
         .loading {
             animation: pulse 1s infinite;
         }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1) rotate(20deg);
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .algorithm-selector {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 12px;
+        }
+
+        .algorithm-option {
+            flex: 1;
+            position: relative;
+        }
+
+        .algorithm-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+
+        .algorithm-option label {
+            display: block;
+            padding: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            background: white;
+        }
+
+        .algorithm-option input[type="radio"]:checked + label {
+            border-color: #667eea;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            font-weight: 600;
+        }
+
+        .algorithm-option label:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        body.dark-mode .algorithm-selector {
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        body.dark-mode .algorithm-option label {
+            background: #0f3460;
+            border-color: #533483;
+            color: #eee;
+        }
+
+        body.dark-mode .algorithm-option input[type="radio"]:checked + label {
+            border-color: #764ba2;
+        }
+
+        .ai-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .ai-badge.ai {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .ai-badge.greedy {
+            background: #6c757d;
+            color: white;
+        }
+
+        .ai-reasoning {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            border-left: 4px solid #667eea;
+        }
+
+        body.dark-mode .ai-reasoning {
+            background: rgba(102, 126, 234, 0.15);
+        }
     </style>
     {% block extra_styles %}{% endblock %}
 </head>
 <body>
+    <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">🌙</button>
+
     <header>
         <div class="container">
             <h1>🎓 Course Recommendation Platform</h1>
@@ -252,6 +405,24 @@
     </footer>
 
     <script>
+        // Dark mode toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            body.classList.add('dark-mode');
+            themeToggle.textContent = '☀️';
+        }
+
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            const isDark = body.classList.contains('dark-mode');
+            themeToggle.textContent = isDark ? '☀️' : '🌙';
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        });
+
         // Add loading animation to forms
         document.querySelectorAll('form').forEach(form => {
             form.addEventListener('submit', function() {

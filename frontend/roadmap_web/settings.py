@@ -125,5 +125,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Backend API Configuration
 BACKEND_API_URL = 'http://localhost:8080/api'
+AI_SERVICE_URL = 'http://localhost:8081'
 STATIC_URL = '/static/'
 STATICFILES_DIRS = []

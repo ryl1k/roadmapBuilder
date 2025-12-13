@@ -102,6 +102,15 @@
 {% block content %}
 <div class="plan-header">
     <h2>Your Personalized Learning Plan</h2>
+    {% if algorithm_used %}
+    <span class="ai-badge {{ algorithm_used }}">
+        {% if algorithm_used == 'ai' %}
+        🤖 Generated with AI
+        {% else %}
+        ⚡ Greedy Algorithm
+        {% endif %}
+    </span>
+    {% endif %}
     {% if profile %}
     <div class="plan-summary">
         <div class="stat-box">
@@ -123,6 +132,13 @@
     </div>
     {% endif %}
 </div>
+
+{% if ai_reasoning %}
+<div class="ai-reasoning">
+    <h3 style="margin-bottom: 1rem;">💡 AI Recommendation Strategy</h3>
+    <p>{{ ai_reasoning }}</p>
+</div>
+{% endif %}
 
 {% if plan.steps %}
 <div class="card">

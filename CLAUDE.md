@@ -6,10 +6,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Course Recommendation Platform is a personalized learning plan generator consisting of:
 - **Backend**: C++20 REST API using Crow framework (runs on port 8080)
+- **AI Service**: Python Flask service using Groq LLM (runs on port 8081)
 - **Frontend**: Django web application (runs on port 8000)
-- **Architecture**: Interface-based design with dependency injection pattern
+- **Architecture**: Microservices with interface-based design and dependency injection pattern
 
-The system allows users to input their learning goals, interests, level, and available time, then generates personalized course recommendations using pluggable recommendation strategies.
+The system allows users to input their learning goals, interests, level, and available time, then generates personalized course recommendations using AI-powered analysis (via Groq) with greedy algorithm fallback.
 
 ## Build & Run Commands
 
@@ -35,6 +36,17 @@ make -j4
 - Uses `backend/data/courses.json` for course catalog
 - Saves user plans to `backend/data/plans/` directory
 
+### AI Service (Python Flask)
+
+```bash
+cd ai-service
+pip install -r requirements.txt
+# Create .env file with GROQ_API_KEY
+python app.py
+```
+
+The AI service runs on `http://localhost:8081/`
+
 ### Frontend (Django Web Application)
 
 ```bash
@@ -48,7 +60,7 @@ python manage.py runserver
 
 The web application runs on `http://localhost:8000/`
 
-**Important**: Start the C++ backend first before accessing the frontend.
+**Important**: Start both the C++ backend (port 8080) and AI service (port 8081) before accessing the frontend.
 
 ### Testing REST API
 
@@ -123,13 +135,22 @@ Located in `backend/include/models/`:
 - Complete REST API with error handling
 - 20 seed courses across multiple domains (Data Science, Web Development, DevOps, Cloud, etc.)
 
+**AI Service (Complete):**
+- Flask REST API using Groq LLM (llama-3.3-70b-versatile)
+- Intelligent course recommendation with context-aware analysis
+- Structured JSON output with reasoning explanations
+- Error handling with graceful fallback support
+
 **Frontend (Complete):**
 - Django web application with modern, responsive UI
+- Dark mode toggle with persistent theme preference
+- Algorithm selector (AI vs Greedy) on recommendation form
 - Home page with profile form for generating recommendations
 - Course catalog page with domain-grouped course listings
 - Learning plan visualization with step-by-step course sequence
+- AI reasoning display when using AI-powered recommendations
 - Error handling with user-friendly messages
-- Integration with backend REST API
+- Integration with both backend REST API and AI service
 
 ## Development Notes
 
@@ -145,10 +166,16 @@ Located in `backend/include/models/`:
 - `backend/data/`: Course catalog (`courses.json`) and saved plans (`plans/`)
 - `backend/docs/`: Comprehensive documentation (architecture, API reference, build instructions)
 
+**AI Service:**
+- `ai-service/app.py`: Flask application with Groq integration
+- `ai-service/requirements.txt`: Python dependencies (flask, groq, flask-cors)
+- `ai-service/.env.example`: Environment variable template
+
 **Frontend:**
 - `frontend/roadmap_web/`: Django project settings
 - `frontend/recommendations/`: Django app with views, URLs, templates
 - `frontend/recommendations/templates/`: HTML templates (base, index, plan, catalog, error)
+- Features: Dark mode, AI/Greedy selector, enhanced UI with animations
 
 ### Code Conventions
 
@@ -159,24 +186,38 @@ Located in `backend/include/models/`:
 - Uses nlohmann/json for JSON serialization/deserialization
 - Models use private members with getters/setters
 
+**AI Service (Flask):**
+- Flask 3.0+ with Python 3.10+
+- Groq SDK for LLM integration (llama-3.3-70b-versatile)
+- CORS enabled for cross-origin requests
+- Environment-based configuration (.env)
+
 **Frontend (Django):**
 - Django 4.2+ with Python 3.10+
-- Views use requests library to communicate with backend API
+- Views use requests library to communicate with backend API and AI service
 - Templates extend `base.html` for consistent styling
-- Backend API URL configured in settings: `BACKEND_API_URL`
+- Dual service integration: `BACKEND_API_URL` (C++) and `AI_SERVICE_URL` (Python)
+- AI-first with greedy fallback strategy
 
 ### REST API Endpoints
 
-Base URL: `http://localhost:8080/api`
+**Backend (C++) - Base URL: `http://localhost:8080/api`**
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/api/courses` | Returns all available courses |
-| POST | `/api/recommendations` | Generates personalized learning plan |
+| POST | `/api/recommendations` | Generates learning plan using greedy algorithm |
 | GET | `/api/plans/<userId>` | Retrieves saved plan for user |
 | POST | `/api/plans/<userId>` | Saves plan for user |
 | DELETE | `/api/plans/<userId>` | Deletes user's plan |
 | GET | `/api/health` | Health check endpoint |
+
+**AI Service (Python) - Base URL: `http://localhost:8081`**
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/ai-recommendations` | Generates AI-powered learning plan using Groq |
+| GET | `/health` | Health check endpoint |
 
 All requests/responses use `application/json` content type.
 
@@ -209,6 +250,13 @@ The architecture is designed for easy extension:
 - nlohmann/json (JSON library) - included in `third_party/`
 - C++20 compatible compiler (MSVC v143 / g++ / clang++)
 - CMake 3.16+ (for non-Windows builds)
+
+**AI Service:**
+- Python 3.10+
+- Flask 3.0+
+- Groq SDK 0.4.0+
+- flask-cors
+- python-dotenv
 
 **Frontend:**
 - Python 3.10+

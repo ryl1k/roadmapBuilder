@@ -40,39 +40,68 @@ def get_recommendations(request):
             # Clean interests
             profile['interests'] = [i.strip() for i in profile['interests'] if i.strip()]
 
-            # Call backend API
-            response = requests.post(
-                f"{settings.BACKEND_API_URL}/recommendations",
-                json={'profile': profile},
-                headers={'Content-Type': 'application/json'},
-                timeout=10
-            )
+            # Get algorithm choice
+            use_ai = request.POST.get('algorithm', 'greedy') == 'ai'
 
-            if response.status_code == 200:
-                plan = response.json()
+            # Get courses for AI service
+            courses_response = requests.get(f"{settings.BACKEND_API_URL}/courses", timeout=5)
+            courses = courses_response.json() if courses_response.status_code == 200 else []
 
-                # Get course details for the plan
-                courses_response = requests.get(f"{settings.BACKEND_API_URL}/courses", timeout=5)
-                courses = courses_response.json() if courses_response.status_code == 200 else []
-                courses_dict = {c['id']: c for c in courses}
+            plan = None
+            algorithm_used = 'greedy'
+            ai_reasoning = None
 
-                # Enrich plan with course details
-                for step in plan.get('steps', []):
-                    course = courses_dict.get(step['courseId'])
-                    if course:
-                        step['courseTitle'] = course.get('title', 'Unknown Course')
-                        step['courseDomain'] = course.get('domain', '')
-                        step['courseLevel'] = course.get('level', '')
+            # Try AI first if selected
+            if use_ai:
+                try:
+                    ai_response = requests.post(
+                        f"{settings.AI_SERVICE_URL}/api/ai-recommendations",
+                        json={'profile': profile, 'courses': courses},
+                        headers={'Content-Type': 'application/json'},
+                        timeout=15
+                    )
 
-                context = {
-                    'plan': plan,
-                    'profile': profile,
-                    'success': True
-                }
-                return render(request, 'recommendations/plan.html', context)
-            else:
-                error_msg = response.json().get('error', 'Failed to generate recommendations')
-                return render(request, 'recommendations/error.html', {'error': error_msg})
+                    if ai_response.status_code == 200:
+                        plan = ai_response.json()
+                        algorithm_used = 'ai'
+                        ai_reasoning = plan.pop('reasoning', None)
+                    else:
+                        print(f"AI service returned error, falling back to greedy")
+                except Exception as e:
+                    print(f"AI service failed: {e}, falling back to greedy")
+
+            # Fallback to greedy algorithm
+            if plan is None:
+                response = requests.post(
+                    f"{settings.BACKEND_API_URL}/recommendations",
+                    json={'profile': profile},
+                    headers={'Content-Type': 'application/json'},
+                    timeout=10
+                )
+
+                if response.status_code == 200:
+                    plan = response.json()
+                else:
+                    error_msg = response.json().get('error', 'Failed to generate recommendations')
+                    return render(request, 'recommendations/error.html', {'error': error_msg})
+
+            # Enrich plan with course details
+            courses_dict = {c['id']: c for c in courses}
+            for step in plan.get('steps', []):
+                course = courses_dict.get(step['courseId'])
+                if course:
+                    step['courseTitle'] = course.get('title', 'Unknown Course')
+                    step['courseDomain'] = course.get('domain', '')
+                    step['courseLevel'] = course.get('level', '')
+
+            context = {
+                'plan': plan,
+                'profile': profile,
+                'success': True,
+                'algorithm_used': algorithm_used,
+                'ai_reasoning': ai_reasoning
+            }
+            return render(request, 'recommendations/plan.html', context)
 
         except requests.exceptions.ConnectionError:
             return render(request, 'recommendations/error.html', {
