@@ -1,0 +1,54 @@
+```mermaid
+sequenceDiagram
+    actor User
+    participant Frontend as FastAPI Frontend<br/>(Port 3000)
+    participant AIService as AI Service<br/>Flask (Port 8081)
+    participant Backend as C++ Backend<br/>Crow (Port 8080)
+    participant DB as PostgreSQL<br/>Database
+
+    %% Initial Load
+    User->>Frontend: Open /recommend page
+    activate Frontend
+    Frontend->>Backend: GET /api/tags
+    activate Backend
+    Backend->>DB: SELECT DISTINCT tags
+    activate DB
+    DB-->>Backend: All unique tags
+    deactivate DB
+    Backend-->>Frontend: ["python", "react", "ml", ...]
+    deactivate Backend
+    Frontend->>Backend: GET /api/courses
+    activate Backend
+    Backend-->>Frontend: 100 courses (cached)
+    deactivate Backend
+    Frontend-->>User: Display chatbot interface
+    deactivate Frontend
+
+    %% User describes goals
+    User->>Frontend: Type: "I want to learn React"
+    activate Frontend
+    Frontend->>AIService: POST /api/extract-tags<br/>{description, availableTags}
+    activate AIService
+    AIService->>AIService: Call Groq LLM<br/>(llama-3.3-70b)
+    AIService->>AIService: Validate tags against<br/>availableTags list
+    AIService-->>Frontend: {domain: "Web Dev",<br/>level: "Beginner",<br/>tags: ["react", "javascript"]}
+    deactivate AIService
+
+    Frontend->>Frontend: Display extracted profile
+    Frontend->>Backend: POST /api/recommendations<br/>{profile}
+    activate Backend
+    Backend->>Backend: GreedyRecommender<br/>makePlan()
+    Backend->>Backend: Filter by domain
+    Backend->>Backend: Score courses
+    Backend->>Backend: Select with prereqs
+    Backend->>DB: INSERT INTO plans, plan_steps
+    activate DB
+    DB-->>Backend: Plan saved
+    deactivate DB
+    Backend-->>Frontend: {steps: [...], totalHours: 120}
+    deactivate Backend
+
+    Frontend->>Frontend: Enrich with course details
+    Frontend-->>User: Display step-by-step roadmap
+    deactivate Frontend
+```

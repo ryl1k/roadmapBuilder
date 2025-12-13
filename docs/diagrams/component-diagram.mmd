@@ -1,0 +1,97 @@
+```mermaid
+graph TB
+    subgraph "Client Layer"
+        Browser[Web Browser]
+    end
+
+    subgraph "Presentation Layer - Port 3000"
+        Frontend[FastAPI Frontend]
+        Templates[Jinja2 Templates]
+        Static[Static Assets<br/>TailwindCSS, Alpine.js]
+
+        Frontend --> Templates
+        Frontend --> Static
+    end
+
+    subgraph "AI Service Layer - Port 8081"
+        AIService[Flask AI Service]
+        Groq[Groq Client<br/>llama-3.3-70b]
+
+        AIService --> Groq
+    end
+
+    subgraph "Business Logic Layer - Port 8080"
+        CrowAPI[Crow REST API]
+
+        subgraph "Catalog Module"
+            ICatalog[ICatalog Interface]
+            PGCatalog[PostgresCatalog]
+            ICatalog -.-> PGCatalog
+        end
+
+        subgraph "Storage Module"
+            IStorage[IStorage Interface]
+            PGStorage[PostgresStorage]
+            IStorage -.-> PGStorage
+        end
+
+        subgraph "Recommender Module"
+            IStrategy[IRecommenderStrategy]
+            Greedy[GreedyRecommender]
+            Scorer[ScoringService]
+            IStrategy -.-> Greedy
+            Greedy --> Scorer
+        end
+
+        subgraph "Models"
+            Course[Course]
+            UserProfile[UserProfile]
+            Plan[Plan]
+        end
+
+        CrowAPI --> ICatalog
+        CrowAPI --> IStorage
+        CrowAPI --> IStrategy
+    end
+
+    subgraph "Data Layer"
+        PostgreSQL[(PostgreSQL Database)]
+
+        subgraph "Tables"
+            CoursesTable[courses<br/>100 courses]
+            UsersTable[users<br/>auth data]
+            PlansTable[plans<br/>user roadmaps]
+            StepsTable[plan_steps<br/>course sequence]
+        end
+
+        PostgreSQL --> CoursesTable
+        PostgreSQL --> UsersTable
+        PostgreSQL --> PlansTable
+        PostgreSQL --> StepsTable
+    end
+
+    subgraph "External Services"
+        GroqAPI[Groq API<br/>Cloud LLM]
+    end
+
+    %% Connections
+    Browser -->|HTTP| Frontend
+    Frontend -->|REST API| CrowAPI
+    Frontend -->|REST API| AIService
+    AIService -->|HTTPS| GroqAPI
+    PGCatalog -->|libpqxx| PostgreSQL
+    PGStorage -->|libpqxx| PostgreSQL
+
+    %% Styling
+    classDef frontend fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    classDef backend fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    classDef ai fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef data fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
+    classDef external fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+
+    class Frontend,Templates,Static frontend
+    class CrowAPI,ICatalog,PGCatalog,IStorage,PGStorage,IStrategy,Greedy,Scorer,Course,UserProfile,Plan backend
+    class AIService,Groq ai
+    class PostgreSQL,CoursesTable,UsersTable,PlansTable,StepsTable data
+    class GroqAPI external
+```

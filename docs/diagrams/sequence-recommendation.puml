@@ -1,0 +1,81 @@
+@startuml AI-Powered Course Recommendation Flow
+
+actor User
+participant "FastAPI\nFrontend\n(Port 3000)" as Frontend
+participant "AI Service\nFlask\n(Port 8081)" as AIService
+participant "C++ Backend\nCrow\n(Port 8080)" as Backend
+database "PostgreSQL\nDatabase" as DB
+
+== Initialization ==
+User -> Frontend: Open /recommend page
+activate Frontend
+Frontend -> Backend: GET /api/tags
+activate Backend
+Backend -> DB: SELECT DISTINCT tags
+activate DB
+DB --> Backend: All unique tags\n["python", "react", ...]
+deactivate DB
+Backend --> Frontend: Tag list
+deactivate Backend
+
+Frontend -> Backend: GET /api/courses
+activate Backend
+Backend --> Frontend: 100 courses (cached)
+deactivate Backend
+Frontend --> User: Display chatbot interface
+deactivate Frontend
+
+== User Describes Learning Goals ==
+User -> Frontend: "I want to learn React\nfor web development"
+activate Frontend
+
+Frontend -> AIService: POST /api/extract-tags\n{\n  description: "...",\n  availableTags: [...]  \n}
+activate AIService
+
+AIService -> AIService: Call Groq LLM\n(llama-3.3-70b-versatile)
+note right of AIService
+Temperature: 0.3
+Max tokens: 500
+Constrained to available tags only
+end note
+
+AIService -> AIService: Validate returned tags\nagainst available list
+AIService --> Frontend: {\n  targetDomain: "Web Development",\n  currentLevel: "Beginner",\n  tags: ["react", "javascript", "frontend"],\n  hoursPerWeek: 10,\n  deadlineWeeks: 12\n}
+deactivate AIService
+
+Frontend -> Frontend: Display extracted\nprofile to user
+
+== Generate Learning Plan ==
+Frontend -> Backend: POST /api/recommendations\n{\n  profile: {\n    userId: 1,\n    targetDomain: "Web Development",\n    currentLevel: "Beginner",\n    interests: ["react", "javascript"],\n    hoursPerWeek: 10,\n    deadlineWeeks: 12\n  }\n}
+activate Backend
+
+Backend -> Backend: GreedyRecommender.makePlan()
+
+note right of Backend
+Algorithm:
+1. Filter courses by domain
+2. Score each course
+   (domain 40% + level 30% + tags 30%)
+3. Sort by score
+4. Greedy selection with prerequisites
+5. Fit within time budget (120h)
+end note
+
+Backend -> DB: INSERT INTO plans\n(user_id, total_hours)
+activate DB
+DB --> Backend: Plan ID
+deactivate DB
+
+Backend -> DB: INSERT INTO plan_steps\n(user_id, step, course_id, ...)
+activate DB
+DB --> Backend: Steps saved
+deactivate DB
+
+Backend --> Frontend: {\n  steps: [\n    {step: 1, courseId: 21, hours: 15, note: "..."},\n    {step: 2, courseId: 22, hours: 20, note: "..."},\n    {step: 3, courseId: 23, hours: 30, note: "..."},\n    ...\n  ],\n  totalHours: 120\n}
+deactivate Backend
+
+Frontend -> Frontend: Enrich steps with\ncourse details
+Frontend --> User: Display personalized\nroadmap in chatbot
+deactivate Frontend
+
+@enduml

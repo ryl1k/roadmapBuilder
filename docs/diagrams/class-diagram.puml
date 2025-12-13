@@ -1,0 +1,147 @@
+@startuml Course Recommendation Platform - Class Diagram
+
+' Models
+package "Models" {
+    class Course {
+        - id: int
+        - title: string
+        - domain: string
+        - level: string
+        - durationHours: int
+        - score: double
+        - tags: vector<string>
+        - prereqIds: vector<int>
+        + getId(): int
+        + getTitle(): string
+        + getDomain(): string
+        + getLevel(): string
+        + getDurationHours(): int
+        + getScore(): double
+        + getTags(): vector<string>
+        + getPrereqIds(): vector<int>
+        + setScore(double): void
+    }
+
+    class UserProfile {
+        - userId: int
+        - targetDomain: string
+        - currentLevel: string
+        - interests: vector<string>
+        - hoursPerWeek: int
+        - deadlineWeeks: int
+        + getUserId(): int
+        + getTargetDomain(): string
+        + getCurrentLevel(): string
+        + getInterests(): vector<string>
+        + getHoursPerWeek(): int
+        + getDeadlineWeeks(): int
+    }
+
+    class PlanStep {
+        + step: int
+        + courseId: int
+        + hours: int
+        + note: string
+    }
+
+    class Plan {
+        - steps: vector<PlanStep>
+        - totalHours: int
+        + getSteps(): vector<PlanStep>
+        + getTotalHours(): int
+        + setSteps(vector<PlanStep>): void
+        + setTotalHours(int): void
+    }
+}
+
+' Interfaces
+package "Interfaces" {
+    interface ICatalog {
+        + {abstract} getAll(): vector<Course>
+        + {abstract} importFromJson(string): void
+    }
+
+    interface IStorage {
+        + {abstract} savePlan(int, Plan): void
+        + {abstract} loadPlan(int): optional<Plan>
+        + {abstract} saveUser(string, string, string): void
+        + {abstract} validateUser(string, string): bool
+        + {abstract} getUser(string): optional<json>
+    }
+
+    interface IRecommenderStrategy {
+        + {abstract} makePlan(UserProfile, vector<Course>): Plan
+    }
+}
+
+' Implementations
+package "Catalog" {
+    class PostgresCatalog {
+        - connStr: string
+        - conn: unique_ptr<pqxx::connection>
+        - createTables(): void
+        - reconnect(): void
+        + getAll(): vector<Course>
+        + importFromJson(string): void
+    }
+}
+
+package "Storage" {
+    class PostgresStorage {
+        - connStr: string
+        - conn: unique_ptr<pqxx::connection>
+        - createTables(): void
+        - hashPassword(string): string
+        + savePlan(int, Plan): void
+        + loadPlan(int): optional<Plan>
+        + saveUser(string, string, string): void
+        + validateUser(string, string): bool
+        + getUser(string): optional<json>
+    }
+}
+
+package "Recommender" {
+    class GreedyRecommender {
+        - scorer: ScoringService
+        - canTakeCourse(Course, set<int>): bool
+        + makePlan(UserProfile, vector<Course>): Plan
+    }
+
+    class ScoringService {
+        + matchScore(Course, UserProfile): double
+    }
+}
+
+' Server
+class CrowServer {
+    - catalog: PostgresCatalog
+    - storage: PostgresStorage
+    - recommender: GreedyRecommender
+    - cachedCourses: vector<Course>
+    + main(): int
+    + setupRoutes(): void
+    + handleCORS(): void
+}
+
+' Relationships
+ICatalog <|.. PostgresCatalog
+IStorage <|.. PostgresStorage
+IRecommenderStrategy <|.. GreedyRecommender
+
+GreedyRecommender --> ScoringService : uses
+GreedyRecommender ..> Course : processes
+GreedyRecommender ..> UserProfile : analyzes
+GreedyRecommender ..> Plan : creates
+
+PostgresCatalog ..> Course : manages
+PostgresStorage ..> Plan : persists
+PostgresStorage ..> PlanStep : stores
+
+Plan *-- PlanStep : contains
+
+CrowServer --> PostgresCatalog : uses
+CrowServer --> PostgresStorage : uses
+CrowServer --> GreedyRecommender : uses
+CrowServer ..> Course : caches
+
+@enduml

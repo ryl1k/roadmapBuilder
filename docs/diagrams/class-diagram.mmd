@@ -1,0 +1,139 @@
+```mermaid
+classDiagram
+    %% Models
+    class Course {
+        -int id
+        -string title
+        -string domain
+        -string level
+        -int durationHours
+        -double score
+        -vector~string~ tags
+        -vector~int~ prereqIds
+        +getId() int
+        +getTitle() string
+        +getDomain() string
+        +getLevel() string
+        +getDurationHours() int
+        +getScore() double
+        +getTags() vector~string~
+        +getPrereqIds() vector~int~
+        +setScore(double)
+    }
+
+    class UserProfile {
+        -int userId
+        -string targetDomain
+        -string currentLevel
+        -vector~string~ interests
+        -int hoursPerWeek
+        -int deadlineWeeks
+        +getUserId() int
+        +getTargetDomain() string
+        +getCurrentLevel() string
+        +getInterests() vector~string~
+        +getHoursPerWeek() int
+        +getDeadlineWeeks() int
+    }
+
+    class PlanStep {
+        +int step
+        +int courseId
+        +int hours
+        +string note
+    }
+
+    class Plan {
+        -vector~PlanStep~ steps
+        -int totalHours
+        +getSteps() vector~PlanStep~
+        +getTotalHours() int
+        +setSteps(vector~PlanStep~)
+        +setTotalHours(int)
+    }
+
+    %% Interfaces
+    class ICatalog {
+        <<interface>>
+        +getAll()* vector~Course~
+        +importFromJson(string)* void
+    }
+
+    class IStorage {
+        <<interface>>
+        +savePlan(int, Plan)* void
+        +loadPlan(int)* optional~Plan~
+        +saveUser(string, string, string)* void
+        +validateUser(string, string)* bool
+        +getUser(string)* optional~json~
+    }
+
+    class IRecommenderStrategy {
+        <<interface>>
+        +makePlan(UserProfile, vector~Course~)* Plan
+    }
+
+    %% Implementations
+    class PostgresCatalog {
+        -string connStr
+        -unique_ptr~pqxx::connection~ conn
+        -createTables() void
+        -reconnect() void
+        +getAll() vector~Course~
+        +importFromJson(string) void
+    }
+
+    class PostgresStorage {
+        -string connStr
+        -unique_ptr~pqxx::connection~ conn
+        -createTables() void
+        -hashPassword(string) string
+        +savePlan(int, Plan) void
+        +loadPlan(int) optional~Plan~
+        +saveUser(string, string, string) void
+        +validateUser(string, string) bool
+        +getUser(string) optional~json~
+    }
+
+    class GreedyRecommender {
+        -ScoringService scorer
+        -canTakeCourse(Course, set~int~) bool
+        +makePlan(UserProfile, vector~Course~) Plan
+    }
+
+    class ScoringService {
+        +matchScore(Course, UserProfile) double
+    }
+
+    %% Server
+    class CrowServer {
+        -PostgresCatalog catalog
+        -PostgresStorage storage
+        -GreedyRecommender recommender
+        -vector~Course~ cachedCourses
+        +main() int
+        +setupRoutes() void
+        +handleCORS() void
+    }
+
+    %% Relationships
+    ICatalog <|.. PostgresCatalog : implements
+    IStorage <|.. PostgresStorage : implements
+    IRecommenderStrategy <|.. GreedyRecommender : implements
+
+    GreedyRecommender --> ScoringService : uses
+    GreedyRecommender ..> Course : processes
+    GreedyRecommender ..> UserProfile : analyzes
+    GreedyRecommender ..> Plan : creates
+
+    PostgresCatalog ..> Course : manages
+    PostgresStorage ..> Plan : persists
+    PostgresStorage ..> PlanStep : stores
+
+    Plan *-- PlanStep : contains
+
+    CrowServer --> PostgresCatalog : uses
+    CrowServer --> PostgresStorage : uses
+    CrowServer --> GreedyRecommender : uses
+    CrowServer ..> Course : caches
+```

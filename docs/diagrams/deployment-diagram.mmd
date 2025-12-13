@@ -1,0 +1,91 @@
+```mermaid
+graph TB
+    subgraph "Client Device"
+        Browser[Web Browser<br/>Chrome/Firefox/Safari]
+    end
+
+    subgraph "Development Environment"
+        subgraph "Docker Container"
+            PostgresDB[PostgreSQL 16<br/>Container<br/>Port 5432]
+            InitDB[init_db.sql<br/>Auto-seed script]
+            PostgresDB -.-> InitDB
+        end
+
+        subgraph "Backend Process"
+            BackendExe[RoadmapBuilder-Backend.exe<br/>C++ Crow Server<br/>Port 8080<br/>Multi-threaded]
+            Libpqxx[libpqxx Library<br/>PostgreSQL Client]
+            CrowLib[Crow Framework<br/>REST API]
+            BackendExe --> Libpqxx
+            BackendExe --> CrowLib
+        end
+
+        subgraph "AI Service Process"
+            AIFlask[app.py<br/>Flask Server<br/>Port 8081]
+            GroqSDK[Groq Python SDK]
+            AIFlask --> GroqSDK
+        end
+
+        subgraph "Frontend Process"
+            FrontendApp[main.py<br/>FastAPI Server<br/>Port 3000]
+            Uvicorn[Uvicorn ASGI Server]
+            FrontendApp --> Uvicorn
+        end
+    end
+
+    subgraph "External Cloud Services"
+        GroqCloud[Groq Cloud API<br/>llama-3.3-70b-versatile<br/>HTTPS]
+    end
+
+    subgraph "Production Deployment (Optional)"
+        subgraph "Web Server"
+            Nginx[Nginx Reverse Proxy<br/>HTTPS/SSL<br/>Port 443]
+        end
+
+        subgraph "Application Servers"
+            BackendProd[C++ Backend<br/>Systemd Service<br/>Multiple Instances]
+            AIProd[AI Service<br/>Gunicorn Workers<br/>Multiple Instances]
+            FrontendProd[Frontend<br/>Uvicorn Workers<br/>Multiple Instances]
+        end
+
+        subgraph "Database Server"
+            PostgresProd[Managed PostgreSQL<br/>AWS RDS / Azure Database<br/>Connection Pool]
+        end
+
+        subgraph "Monitoring"
+            Prometheus[Prometheus Metrics]
+            Grafana[Grafana Dashboards]
+        end
+    end
+
+    %% Development Connections
+    Browser -->|HTTP :3000| FrontendApp
+    FrontendApp -->|HTTP :8080| BackendExe
+    FrontendApp -->|HTTP :8081| AIFlask
+    BackendExe -->|TCP :5432| PostgresDB
+    AIFlask -->|HTTPS| GroqCloud
+
+    %% Production Connections
+    Browser -.->|HTTPS :443| Nginx
+    Nginx -.-> FrontendProd
+    FrontendProd -.-> BackendProd
+    FrontendProd -.-> AIProd
+    BackendProd -.-> PostgresProd
+    AIProd -.-> GroqCloud
+    BackendProd -.-> Prometheus
+    AIProd -.-> Prometheus
+    FrontendProd -.-> Prometheus
+    Prometheus -.-> Grafana
+
+    %% Styling
+    classDef client fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef dev fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+    classDef prod fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
+    classDef external fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    classDef monitor fill:#e0f2f1,stroke:#00695c,stroke-width:2px
+
+    class Browser client
+    class PostgresDB,InitDB,BackendExe,Libpqxx,CrowLib,AIFlask,GroqSDK,FrontendApp,Uvicorn dev
+    class Nginx,BackendProd,AIProd,FrontendProd,PostgresProd prod
+    class GroqCloud external
+    class Prometheus,Grafana monitor
+```

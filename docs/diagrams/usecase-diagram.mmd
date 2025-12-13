@@ -1,0 +1,56 @@
+```mermaid
+graph TB
+    %% Actors
+    User((User))
+    AIService[AI Service<br/>Groq LLM]
+    Database[(PostgreSQL<br/>Database)]
+
+    %% Use Cases
+    UC1[Browse Course Catalog]
+    UC2[Describe Learning Goals<br/>in Natural Language]
+    UC3[Get AI-Extracted Profile]
+    UC4[Generate Learning Plan]
+    UC5[View Personalized Roadmap]
+    UC6[Register Account]
+    UC7[Login to System]
+    UC8[Save Learning Plan]
+    UC9[Load Saved Plan]
+    UC10[Delete Plan]
+    UC11[View Course Details]
+    UC12[Filter Courses by Domain]
+    UC13[Check Prerequisites]
+
+    %% User connections
+    User --> UC1
+    User --> UC2
+    User --> UC4
+    User --> UC5
+    User --> UC6
+    User --> UC7
+    User --> UC8
+    User --> UC9
+    User --> UC10
+    User --> UC11
+    User --> UC12
+
+    %% Include relationships
+    UC2 -.->|includes| UC3
+    UC3 --> AIService
+    UC4 -.->|includes| UC13
+    UC4 --> Database
+    UC8 --> Database
+    UC9 --> Database
+    UC10 --> Database
+    UC1 --> Database
+    UC11 -.->|extends| UC1
+    UC12 -.->|extends| UC1
+
+    %% Styling
+    classDef actor fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    classDef usecase fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+    classDef system fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+
+    class User actor
+    class UC1,UC2,UC3,UC4,UC5,UC6,UC7,UC8,UC9,UC10,UC11,UC12,UC13 usecase
+    class AIService,Database system
+```

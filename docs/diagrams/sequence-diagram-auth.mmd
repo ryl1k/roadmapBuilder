@@ -1,0 +1,91 @@
+```mermaid
+sequenceDiagram
+    actor User
+    participant Frontend as FastAPI Frontend
+    participant Backend as C++ Backend<br/>Crow API
+    participant Storage as PostgresStorage
+    participant DB as PostgreSQL
+
+    %% Registration Flow
+    rect rgb(200, 220, 240)
+        note right of User: User Registration
+        User->>Frontend: Enter username, email, password
+        Frontend->>Backend: POST /api/auth/register<br/>{username, email, password}
+        activate Backend
+        Backend->>Storage: saveUser(username, email, password)
+        activate Storage
+        Storage->>Storage: hashPassword(password)
+        Storage->>DB: INSERT INTO users<br/>(username, email, password_hash)
+        activate DB
+        alt Username/Email exists
+            DB-->>Storage: Unique constraint violation
+            Storage-->>Backend: throw exception
+            Backend-->>Frontend: 400 Bad Request<br/>{error: "User exists"}
+            Frontend-->>User: Show error message
+        else Success
+            DB-->>Storage: User created (id: 1)
+            deactivate DB
+            Storage-->>Backend: Success
+            deactivate Storage
+            Backend-->>Frontend: 200 OK<br/>{success: true, token: "username"}
+            deactivate Backend
+            Frontend->>Frontend: Store token in localStorage
+            Frontend-->>User: Redirect to dashboard
+        end
+    end
+
+    %% Login Flow
+    rect rgb(240, 220, 200)
+        note right of User: User Login
+        User->>Frontend: Enter username, password
+        Frontend->>Backend: POST /api/auth/login<br/>{username, password}
+        activate Backend
+        Backend->>Storage: validateUser(username, password)
+        activate Storage
+        Storage->>Storage: hashPassword(password)
+        Storage->>DB: SELECT * FROM users<br/>WHERE username = $1
+        activate DB
+        DB-->>Storage: User record
+        deactivate DB
+        Storage->>Storage: Compare password hashes
+        alt Invalid credentials
+            Storage-->>Backend: return false
+            Backend-->>Frontend: 401 Unauthorized<br/>{error: "Invalid credentials"}
+            Frontend-->>User: Show error message
+        else Valid credentials
+            Storage-->>Backend: return true
+            deactivate Storage
+            Backend-->>Frontend: 200 OK<br/>{success: true, token: "username"}
+            deactivate Backend
+            Frontend->>Frontend: Store token in localStorage
+            Frontend-->>User: Redirect to dashboard
+        end
+    end
+
+    %% Token Validation
+    rect rgb(220, 240, 220)
+        note right of User: Token Validation
+        User->>Frontend: Access protected page
+        Frontend->>Backend: GET /api/auth/me<br/>Header: Authorization: Bearer token
+        activate Backend
+        Backend->>Storage: getUser(username)
+        activate Storage
+        Storage->>DB: SELECT id, username, email<br/>FROM users WHERE username = $1
+        activate DB
+        alt User not found
+            DB-->>Storage: Empty result
+            deactivate DB
+            Storage-->>Backend: nullopt
+            Backend-->>Frontend: 401 Unauthorized
+            Frontend-->>User: Redirect to login
+        else User found
+            DB-->>Storage: User data
+            deactivate DB
+            Storage-->>Backend: {id, username, email}
+            deactivate Storage
+            Backend-->>Frontend: 200 OK<br/>{id, username, email}
+            deactivate Backend
+            Frontend-->>User: Display protected content
+        end
+    end
+```

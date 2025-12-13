@@ -1,0 +1,40 @@
+```mermaid
+erDiagram
+    COURSES ||--o{ PLAN_STEPS : "included_in"
+    USERS ||--o| PLANS : "has"
+    USERS ||--o{ PLAN_STEPS : "owns"
+    PLANS ||--|{ PLAN_STEPS : "contains"
+
+    COURSES {
+        integer id PK "Primary Key"
+        varchar title "Course name"
+        varchar domain "e.g., Data Science, Web Dev"
+        varchar level "Beginner/Intermediate/Advanced"
+        integer duration_hours "Course length"
+        text_array tags "Skills covered"
+        integer_array prereq_ids "Required course IDs"
+    }
+
+    USERS {
+        serial id PK "Auto-increment Primary Key"
+        varchar username UK "Unique username"
+        varchar email UK "Unique email"
+        varchar password_hash "Hashed password"
+        timestamp created_at "Registration date"
+    }
+
+    PLANS {
+        integer user_id PK,FK "Foreign Key to users"
+        integer total_hours "Sum of all step hours"
+        timestamp created_at "Plan creation date"
+    }
+
+    PLAN_STEPS {
+        serial id PK "Auto-increment Primary Key"
+        integer user_id FK "Foreign Key to users"
+        integer step "Sequence number"
+        integer course_id FK "Foreign Key to courses (logical)"
+        integer hours "Time for this step"
+        text note "Explanation/reasoning"
+    }
+```
