@@ -23,24 +23,29 @@ def extract_tags():
     try:
         data = request.json
         description = data.get('description', '')
+        available_tags = data.get('availableTags', [])
 
         if not description:
             return jsonify({'error': 'No description provided'}), 400
 
-        # Build prompt for tag extraction
+        # Build prompt for tag extraction with available tags constraint
         prompt = f"""
 Analyze this learning goal description and extract key information:
 
 USER DESCRIPTION:
 "{description}"
 
+AVAILABLE TAGS (you MUST only select from these):
+{', '.join(available_tags)}
+
 Extract and return ONLY a JSON object with these fields:
-- targetDomain: The main field/domain (e.g., "Data Science", "Web Development", "DevOps")
+- targetDomain: The main field/domain (e.g., "Data Science", "Web Development", "DevOps", "Cloud", "Mobile", "Cybersecurity", "Database", "AI")
 - currentLevel: The user's skill level ("Beginner", "Intermediate", or "Advanced")
-- tags: Array of 3-7 specific topic keywords (e.g., ["python", "machine-learning", "pandas"])
+- tags: Array of 3-7 tags selected ONLY from the AVAILABLE TAGS list above
 - hoursPerWeek: Estimated hours per week they can dedicate (number, default 10 if not mentioned)
 - deadlineWeeks: Timeline in weeks (number, default 12 if not mentioned)
 
+CRITICAL: Do NOT create new tags. Only use tags from the AVAILABLE TAGS list.
 Return ONLY valid JSON, no markdown, no explanation.
 """
 
@@ -77,22 +82,33 @@ Return ONLY valid JSON, no markdown, no explanation.
         # Validate and set defaults
         result['targetDomain'] = result.get('targetDomain', 'General')
         result['currentLevel'] = result.get('currentLevel', 'Beginner')
-        result['tags'] = result.get('tags', [])
         result['hoursPerWeek'] = int(result.get('hoursPerWeek', 10))
         result['deadlineWeeks'] = int(result.get('deadlineWeeks', 12))
+
+        # Filter tags to only include available ones
+        returned_tags = result.get('tags', [])
+        if available_tags:
+            available_tags_lower = [tag.lower() for tag in available_tags]
+            result['tags'] = [tag for tag in returned_tags if tag.lower() in available_tags_lower]
+        else:
+            result['tags'] = returned_tags
 
         return jsonify(result), 200
 
     except Exception as e:
-        # Fallback: simple keyword extraction
+        # Fallback: simple keyword extraction using only available tags
         description_lower = description.lower()
 
         # Simple domain detection
         domain_map = {
-            'data science': ['data', 'science', 'analytics', 'ml', 'machine learning'],
+            'Data Science': ['data', 'science', 'analytics', 'ml', 'machine learning'],
             'Web Development': ['web', 'frontend', 'backend', 'html', 'css', 'javascript'],
             'DevOps': ['devops', 'docker', 'kubernetes', 'ci/cd', 'deployment'],
             'Cloud': ['cloud', 'aws', 'azure', 'gcp'],
+            'Mobile': ['mobile', 'android', 'ios', 'app'],
+            'Cybersecurity': ['security', 'cyber', 'hacking', 'encryption'],
+            'Database': ['database', 'sql', 'nosql', 'postgres'],
+            'AI': ['ai', 'artificial', 'intelligence', 'llm'],
         }
 
         detected_domain = 'General'
@@ -101,15 +117,19 @@ Return ONLY valid JSON, no markdown, no explanation.
                 detected_domain = domain
                 break
 
-        # Extract basic tags from common words
-        words = description_lower.replace(',', ' ').replace('.', ' ').split()
-        tech_keywords = ['python', 'javascript', 'java', 'react', 'angular', 'vue', 'node', 'django', 'flask',
-                        'docker', 'kubernetes', 'aws', 'azure', 'sql', 'nosql', 'mongodb', 'postgresql',
-                        'machine-learning', 'ml', 'ai', 'deep-learning', 'tensorflow', 'pytorch']
+        # Extract tags only from available tags
+        tags = []
+        if available_tags:
+            words = description_lower.replace(',', ' ').replace('.', ' ').split()
+            available_tags_lower = {tag.lower(): tag for tag in available_tags}
 
-        tags = [word for word in words if word in tech_keywords][:5]
-        if not tags:
-            tags = ['programming']
+            for word in words:
+                if word in available_tags_lower and len(tags) < 5:
+                    tags.append(available_tags_lower[word])
+
+        if not tags and available_tags:
+            # If no matches, pick first few available tags
+            tags = available_tags[:3]
 
         return jsonify({
             'targetDomain': detected_domain,

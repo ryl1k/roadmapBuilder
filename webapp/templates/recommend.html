@@ -102,14 +102,19 @@ function chatData() {
         userInput: '',
         loading: false,
         courses: [],
+        availableTags: [],
 
         async init() {
-            // Load courses for reference
+            // Load courses and tags for reference
             try {
-                const response = await fetch('{{ backend_url }}/courses');
-                this.courses = await response.json();
+                const [coursesRes, tagsRes] = await Promise.all([
+                    fetch('{{ backend_url }}/courses'),
+                    fetch('{{ backend_url }}/tags')
+                ]);
+                this.courses = await coursesRes.json();
+                this.availableTags = await tagsRes.json();
             } catch (err) {
-                console.error('Failed to load courses:', err);
+                console.error('Failed to load courses/tags:', err);
             }
         },
 
@@ -129,11 +134,14 @@ function chatData() {
             this.loading = true;
 
             try {
-                // Call AI service to extract tags
+                // Call AI service to extract tags (send available tags to constrain AI)
                 const aiResponse = await fetch('{{ ai_url }}/api/extract-tags', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ description: userMessage })
+                    body: JSON.stringify({
+                        description: userMessage,
+                        availableTags: this.availableTags
+                    })
                 });
 
                 if (!aiResponse.ok) throw new Error('AI service failed');

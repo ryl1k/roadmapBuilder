@@ -89,6 +89,21 @@ int main() {
 			return crow::response(response.dump());
 		});
 
+	// GET all unique tags from courses
+	CROW_ROUTE(app, "/api/tags").methods(HTTP_GET)
+		([&]() {
+			std::set<std::string> uniqueTags;
+			for (const auto& course : cachedCourses) {
+				const auto& tags = course.getTags();
+				uniqueTags.insert(tags.begin(), tags.end());
+			}
+			json tagsArray = json::array();
+			for (const auto& tag : uniqueTags) {
+				tagsArray.push_back(tag);
+			}
+			return crow::response(tagsArray.dump());
+		});
+
 	// POST recommendation request
 	CROW_ROUTE(app, "/api/recommendations").methods(HTTP_POST)
 		([&](const crow::request& req) {
