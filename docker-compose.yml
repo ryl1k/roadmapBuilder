@@ -6,14 +6,16 @@ services:
     container_name: roadmap_postgres
     environment:
       POSTGRES_DB: roadmap
-      POSTGRES_USER: roadmap_user
-      POSTGRES_PASSWORD: roadmap_pass
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      # Auto-seed on first startup (comment out line below after first run)
+      - ./backend/data/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U roadmap_user -d roadmap"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d roadmap"]
       interval: 5s
       timeout: 5s
       retries: 5
