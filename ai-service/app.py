@@ -17,6 +17,109 @@ groq_client = Groq(api_key=os.getenv('GROQ_API_KEY'))
 def health():
     return jsonify({'status': 'ok', 'service': 'ai-recommender', 'version': '1.0'})
 
+@app.route('/api/extract-tags', methods=['POST'])
+def extract_tags():
+    """Extract learning tags from user's natural language description"""
+    try:
+        data = request.json
+        description = data.get('description', '')
+
+        if not description:
+            return jsonify({'error': 'No description provided'}), 400
+
+        # Build prompt for tag extraction
+        prompt = f"""
+Analyze this learning goal description and extract key information:
+
+USER DESCRIPTION:
+"{description}"
+
+Extract and return ONLY a JSON object with these fields:
+- targetDomain: The main field/domain (e.g., "Data Science", "Web Development", "DevOps")
+- currentLevel: The user's skill level ("Beginner", "Intermediate", or "Advanced")
+- tags: Array of 3-7 specific topic keywords (e.g., ["python", "machine-learning", "pandas"])
+- hoursPerWeek: Estimated hours per week they can dedicate (number, default 10 if not mentioned)
+- deadlineWeeks: Timeline in weeks (number, default 12 if not mentioned)
+
+Return ONLY valid JSON, no markdown, no explanation.
+"""
+
+        # Call Groq API
+        response = groq_client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are an expert at analyzing learning goals and extracting structured information. Always return valid JSON only."
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            temperature=0.3,
+            max_tokens=500
+        )
+
+        # Parse response
+        ai_content = response.choices[0].message.content.strip()
+
+        # Extract JSON from response
+        start_idx = ai_content.find('{')
+        end_idx = ai_content.rfind('}') + 1
+
+        if start_idx == -1 or end_idx == 0:
+            raise ValueError("No JSON found in AI response")
+
+        json_str = ai_content[start_idx:end_idx]
+        result = json.loads(json_str)
+
+        # Validate and set defaults
+        result['targetDomain'] = result.get('targetDomain', 'General')
+        result['currentLevel'] = result.get('currentLevel', 'Beginner')
+        result['tags'] = result.get('tags', [])
+        result['hoursPerWeek'] = int(result.get('hoursPerWeek', 10))
+        result['deadlineWeeks'] = int(result.get('deadlineWeeks', 12))
+
+        return jsonify(result), 200
+
+    except Exception as e:
+        # Fallback: simple keyword extraction
+        description_lower = description.lower()
+
+        # Simple domain detection
+        domain_map = {
+            'data science': ['data', 'science', 'analytics', 'ml', 'machine learning'],
+            'Web Development': ['web', 'frontend', 'backend', 'html', 'css', 'javascript'],
+            'DevOps': ['devops', 'docker', 'kubernetes', 'ci/cd', 'deployment'],
+            'Cloud': ['cloud', 'aws', 'azure', 'gcp'],
+        }
+
+        detected_domain = 'General'
+        for domain, keywords in domain_map.items():
+            if any(kw in description_lower for kw in keywords):
+                detected_domain = domain
+                break
+
+        # Extract basic tags from common words
+        words = description_lower.replace(',', ' ').replace('.', ' ').split()
+        tech_keywords = ['python', 'javascript', 'java', 'react', 'angular', 'vue', 'node', 'django', 'flask',
+                        'docker', 'kubernetes', 'aws', 'azure', 'sql', 'nosql', 'mongodb', 'postgresql',
+                        'machine-learning', 'ml', 'ai', 'deep-learning', 'tensorflow', 'pytorch']
+
+        tags = [word for word in words if word in tech_keywords][:5]
+        if not tags:
+            tags = ['programming']
+
+        return jsonify({
+            'targetDomain': detected_domain,
+            'currentLevel': 'Beginner',
+            'tags': tags,
+            'hoursPerWeek': 10,
+            'deadlineWeeks': 12,
+            'fallback': True
+        }), 200
+
 @app.route('/api/ai-recommendations', methods=['POST'])
 def ai_recommendations():
     try:
