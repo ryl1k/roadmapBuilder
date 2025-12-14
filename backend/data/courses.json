@@ -1,0 +1,1476 @@
+[
+  {
+    "id": 1,
+    "title": "Python Fundamentals",
+    "domain": "Data Science",
+    "level": "Beginner",
+    "durationHours": 20,
+    "tags": [
+      "python",
+      "programming",
+      "basics"
+    ],
+    "prereqIds": []
+  },
+  {
+    "id": 2,
+    "title": "Statistics for Data Science",
+    "domain": "Data Science",
+    "level": "Beginner",
+    "durationHours": 25,
+    "tags": [
+      "statistics",
+      "math",
+      "probability"
+    ],
+    "prereqIds": []
+  },
+  {
+    "id": 3,
+    "title": "NumPy Essentials",
+    "domain": "Data Science",
+    "level": "Beginner",
+    "durationHours": 15,
+    "tags": [
+      "numpy",
+      "python",
+      "arrays"
+    ],
+    "prereqIds": [
+      1
+    ]
+  },
+  {
+    "id": 4,
+    "title": "Pandas for Data Analysis",
+    "domain": "Data Science",
+    "level": "Intermediate",
+    "durationHours": 30,
+    "tags": [
+      "pandas",
+      "python",
+      "data-analysis"
+    ],
+    "prereqIds": [
+      3
+    ]
+  },
+  {
+    "id": 5,
+    "title": "Data Visualization with Matplotlib",
+    "domain": "Data Science",
+    "level": "Intermediate",
+    "durationHours": 20,
+    "tags": [
+      "matplotlib",
+      "visualization",
+      "python"
+    ],
+    "prereqIds": [
+      3
+    ]
+  },
+  {
+    "id": 6,
+    "title": "Advanced Pandas Techniques",
+    "domain": "Data Science",
+    "level": "Advanced",
+    "durationHours": 25,
+    "tags": [
+      "pandas",
+      "data-manipulation",
+      "optimization"
+    ],
+    "prereqIds": [
+      4
+    ]
+  },
+  {
+    "id": 7,
+    "title": "Machine Learning Basics",
+    "domain": "Data Science",
+    "level": "Intermediate",
+    "durationHours": 40,
+    "tags": [
+      "ml",
+      "scikit-learn",
+      "algorithms"
+    ],
+    "prereqIds": [
+      2,
+      4
+    ]
+  },
+  {
+    "id": 8,
+    "title": "Deep Learning Fundamentals",
+    "domain": "Data Science",
+    "level": "Advanced",
+    "durationHours": 50,
+    "tags": [
+      "deep-learning",
+      "neural-networks",
+      "tensorflow"
+    ],
+    "prereqIds": [
+      7
+    ]
+  },
+  {
+    "id": 9,
+    "title": "Natural Language Processing",
+    "domain": "Data Science",
+    "level": "Advanced",
+    "durationHours": 45,
+    "tags": [
+      "nlp",
+      "text-analysis",
+      "transformers"
+    ],
+    "prereqIds": [
+      7
+    ]
+  },
+  {
+    "id": 10,
+    "title": "Computer Vision with OpenCV",
+    "domain": "Data Science",
+    "level": "Advanced",
+    "durationHours": 40,
+    "tags": [
+      "computer-vision",
+      "opencv",
+      "image-processing"
+    ],
+    "prereqIds": [
+      8
+    ]
+  },
+  {
+    "id": 11,
+    "title": "SQL for Data Analysis",
+    "domain": "Data Science",
+    "level": "Beginner",
+    "durationHours": 25,
+    "tags": [
+      "sql",
+      "database",
+      "queries"
+    ],
+    "prereqIds": []
+  },
+  {
+    "id": 12,
+    "title": "Big Data with Apache Spark",
+    "domain": "Data Science",
+    "level": "Advanced",
+    "durationHours": 50,
+    "tags": [
+      "spark",
+      "big-data",
+      "distributed-computing"
+    ],
+    "prereqIds": [
+      4
+    ]
+  },
+  {
+    "id": 13,
+    "title": "Time Series Analysis",
+    "domain": "Data Science",
+    "level": "Intermediate",
+    "durationHours": 30,
+    "tags": [
+      "time-series",
+      "forecasting",
+      "statistics"
+    ],
+    "prereqIds": [
+      2,
+      4
+    ]
+  },
+  {
+    "id": 14,
+    "title": "A/B Testing and Experimentation",
+    "domain": "Data Science",
+    "level": "Intermediate",
+    "durationHours": 20,
+    "tags": [
+      "ab-testing",
+      "statistics",
+      "experimentation"
+    ],
+    "prereqIds": [
+      2
+    ]
+  },
+  {
+    "id": 15,
+    "title": "Feature Engineering",
+    "domain": "Data Science",
+    "level": "Intermediate",
+    "durationHours": 25,
+    "tags": [
+      "feature-engineering",
+      "ml",
+      "preprocessing"
+    ],
+    "prereqIds": [
+      7
+    ]
+  },
+  {
+    "id": 16,
+    "title": "Model Deployment with MLOps",
+    "domain": "Data Science",
+    "level": "Advanced",
+    "durationHours": 35,
+    "tags": [
+      "mlops",
+      "deployment",
+      "docker"
+    ],
+    "prereqIds": [
+      7
+    ]
+  },
+  {
+    "id": 17,
+    "title": "Reinforcement Learning",
+    "domain": "Data Science",
+    "level": "Advanced",
+    "durationHours": 45,
+    "tags": [
+      "reinforcement-learning",
+      "ai",
+      "algorithms"
+    ],
+    "prereqIds": [
+      8
+    ]
+  },
+  {
+    "id": 18,
+    "title": "Data Engineering Fundamentals",
+    "domain": "Data Science",
+    "level": "Intermediate",
+    "durationHours": 35,
+    "tags": [
+      "data-engineering",
+      "etl",
+      "pipelines"
+    ],
+    "prereqIds": [
+      11
+    ]
+  },
+  {
+    "id": 19,
+    "title": "Tableau for Business Intelligence",
+    "domain": "Data Science",
+    "level": "Beginner",
+    "durationHours": 20,
+    "tags": [
+      "tableau",
+      "bi",
+      "visualization"
+    ],
+    "prereqIds": []
+  },
+  {
+    "id": 20,
+    "title": "Power BI Essentials",
+    "domain": "Data Science",
+    "level": "Beginner",
+    "durationHours": 20,
+    "tags": [
+      "powerbi",
+      "bi",
+      "dashboards"
+    ],
+    "prereqIds": []
+  },
+  {
+    "id": 21,
+    "title": "HTML5 Fundamentals",
+    "domain": "Web Development",
+    "level": "Beginner",
+    "durationHours": 15,
+    "tags": [
+      "html",
+      "web",
+      "markup"
+    ],
+    "prereqIds": []
+  },
+  {
+    "id": 22,
+    "title": "CSS3 Styling",
+    "domain": "Web Development",
+    "level": "Beginner",
+    "durationHours": 20,
+    "tags": [
+      "css",
+      "styling",
+      "design"
+    ],
+    "prereqIds": [
+      21
+    ]
+  },
+  {
+    "id": 23,
+    "title": "JavaScript Basics",
+    "domain": "Web Development",
+    "level": "Beginner",
+    "durationHours": 30,
+    "tags": [
+      "javascript",
+      "programming",
+      "web"
+    ],
+    "prereqIds": [
+      21
+    ]
+  },
+  {
+    "id": 24,
+    "title": "Responsive Web Design",
+    "domain": "Web Development",
+    "level": "Intermediate",
+    "durationHours": 25,
+    "tags": [
+      "responsive",
+      "css",
+      "mobile"
+    ],
+    "prereqIds": [
+      22
+    ]
+  },
+  {
+    "id": 25,
+    "title": "Modern JavaScript ES6+",
+    "domain": "Web Development",
+    "level": "Intermediate",
+    "durationHours": 30,
+    "tags": [
+      "javascript",
+      "es6",
+      "modern"
+    ],
+    "prereqIds": [
+      23
+    ]
+  },
+  {
+    "id": 26,
+    "title": "React Fundamentals",
+    "domain": "Web Development",
+    "level": "Intermediate",
+    "durationHours": 40,
+    "tags": [
+      "react",
+      "frontend",
+      "components"
+    ],
+    "prereqIds": [
+      25
+    ]
+  },
+  {
+    "id": 27,
+    "title": "Vue.js Complete Guide",
+    "domain": "Web Development",
+    "level": "Intermediate",
+    "durationHours": 35,
+    "tags": [
+      "vue",
+      "frontend",
+      "javascript"
+    ],
+    "prereqIds": [
+      25
+    ]
+  },
+  {
+    "id": 28,
+    "title": "Angular for Enterprise",
+    "domain": "Web Development",
+    "level": "Intermediate",
+    "durationHours": 45,
+    "tags": [
+      "angular",
+      "typescript",
+      "frontend"
+    ],
+    "prereqIds": [
+      25
+    ]
+  },
+  {
+    "id": 29,
+    "title": "Node.js Backend Development",
+    "domain": "Web Development",
+    "level": "Intermediate",
+    "durationHours": 40,
+    "tags": [
+      "nodejs",
+      "backend",
+      "javascript"
+    ],
+    "prereqIds": [
+      25
+    ]
+  },
+  {
+    "id": 30,
+    "title": "Express.js REST APIs",
+    "domain": "Web Development",
+    "level": "Intermediate",
+    "durationHours": 30,
+    "tags": [
+      "express",
+      "rest",
+      "api"
+    ],
+    "prereqIds": [
+      29
+    ]
+  },
+  {
+    "id": 31,
+    "title": "MongoDB Essentials",
+    "domain": "Web Development",
+    "level": "Beginner",
+    "durationHours": 25,
+    "tags": [
+      "mongodb",
+      "nosql",
+      "database"
+    ],
+    "prereqIds": []
+  },
+  {
+    "id": 32,
+    "title": "Full Stack with MERN",
+    "domain": "Web Development",
+    "level": "Advanced",
+    "durationHours": 60,
+    "tags": [
+      "mern",
+      "react",
+      "nodejs",
+      "mongodb"
+    ],
+    "prereqIds": [
+      26,
+      30,
+      31
+    ]
+  },
+  {
+    "id": 33,
+    "title": "GraphQL APIs",
+    "domain": "Web Development",
+    "level": "Advanced",
+    "durationHours": 30,
+    "tags": [
+      "graphql",
+      "api",
+      "backend"
+    ],
+    "prereqIds": [
+      30
+    ]
+  },
+  {
+    "id": 34,
+    "title": "Next.js for Production",
+    "domain": "Web Development",
+    "level": "Advanced",
+    "durationHours": 40,
+    "tags": [
+      "nextjs",
+      "react",
+      "ssr"
+    ],
+    "prereqIds": [
+      26
+    ]
+  },
+  {
+    "id": 35,
+    "title": "TypeScript Mastery",
+    "domain": "Web Development",
+    "level": "Intermediate",
+    "durationHours": 35,
+    "tags": [
+      "typescript",
+      "javascript",
+      "types"
+    ],
+    "prereqIds": [
+      25
+    ]
+  },
+  {
+    "id": 36,
+    "title": "TailwindCSS Modern Styling",
+    "domain": "Web Development",
+    "level": "Intermediate",
+    "durationHours": 20,
+    "tags": [
+      "tailwind",
+      "css",
+      "utility"
+    ],
+    "prereqIds": [
+      22
+    ]
+  },
+  {
+    "id": 37,
+    "title": "Web Performance Optimization",
+    "domain": "Web Development",
+    "level": "Advanced",
+    "durationHours": 25,
+    "tags": [
+      "performance",
+      "optimization",
+      "web"
+    ],
+    "prereqIds": [
+      26
+    ]
+  },
+  {
+    "id": 38,
+    "title": "Progressive Web Apps",
+    "domain": "Web Development",
+    "level": "Advanced",
+    "durationHours": 30,
+    "tags": [
+      "pwa",
+      "web",
+      "offline"
+    ],
+    "prereqIds": [
+      26
+    ]
+  },
+  {
+    "id": 39,
+    "title": "WebAssembly Fundamentals",
+    "domain": "Web Development",
+    "level": "Advanced",
+    "durationHours": 35,
+    "tags": [
+      "webassembly",
+      "wasm",
+      "performance"
+    ],
+    "prereqIds": [
+      23
+    ]
+  },
+  {
+    "id": 40,
+    "title": "Web Security Best Practices",
+    "domain": "Web Development",
+    "level": "Advanced",
+    "durationHours": 30,
+    "tags": [
+      "security",
+      "web",
+      "authentication"
+    ],
+    "prereqIds": [
+      30
+    ]
+  },
+  {
+    "id": 41,
+    "title": "Linux Command Line",
+    "domain": "DevOps",
+    "level": "Beginner",
+    "durationHours": 25,
+    "tags": [
+      "linux",
+      "bash",
+      "command-line"
+    ],
+    "prereqIds": []
+  },
+  {
+    "id": 42,
+    "title": "Git Version Control",
+    "domain": "DevOps",
+    "level": "Beginner",
+    "durationHours": 20,
+    "tags": [
+      "git",
+      "version-control",
+      "github"
+    ],
+    "prereqIds": []
+  },
+  {
+    "id": 43,
+    "title": "Docker Fundamentals",
+    "domain": "DevOps",
+    "level": "Intermediate",
+    "durationHours": 30,
+    "tags": [
+      "docker",
+      "containers",
+      "virtualization"
+    ],
+    "prereqIds": [
+      41
+    ]
+  },
+  {
+    "id": 44,
+    "title": "Kubernetes Basics",
+    "domain": "DevOps",
+    "level": "Intermediate",
+    "durationHours": 40,
+    "tags": [
+      "kubernetes",
+      "k8s",
+      "orchestration"
+    ],
+    "prereqIds": [
+      43
+    ]
+  },
+  {
+    "id": 45,
+    "title": "CI/CD with Jenkins",
+    "domain": "DevOps",
+    "level": "Intermediate",
+    "durationHours": 35,
+    "tags": [
+      "jenkins",
+      "ci-cd",
+      "automation"
+    ],
+    "prereqIds": [
+      42,
+      43
+    ]
+  },
+  {
+    "id": 46,
+    "title": "GitHub Actions Workflows",
+    "domain": "DevOps",
+    "level": "Intermediate",
+    "durationHours": 25,
+    "tags": [
+      "github-actions",
+      "ci-cd",
+      "automation"
+    ],
+    "prereqIds": [
+      42
+    ]
+  },
+  {
+    "id": 47,
+    "title": "Infrastructure as Code with Terraform",
+    "domain": "DevOps",
+    "level": "Advanced",
+    "durationHours": 40,
+    "tags": [
+      "terraform",
+      "iac",
+      "automation"
+    ],
+    "prereqIds": [
+      41
+    ]
+  },
+  {
+    "id": 48,
+    "title": "Ansible for Configuration Management",
+    "domain": "DevOps",
+    "level": "Intermediate",
+    "durationHours": 30,
+    "tags": [
+      "ansible",
+      "automation",
+      "configuration"
+    ],
+    "prereqIds": [
+      41
+    ]
+  },
+  {
+    "id": 49,
+    "title": "Monitoring with Prometheus",
+    "domain": "DevOps",
+    "level": "Intermediate",
+    "durationHours": 25,
+    "tags": [
+      "prometheus",
+      "monitoring",
+      "metrics"
+    ],
+    "prereqIds": [
+      44
+    ]
+  },
+  {
+    "id": 50,
+    "title": "Logging with ELK Stack",
+    "domain": "DevOps",
+    "level": "Intermediate",
+    "durationHours": 30,
+    "tags": [
+      "elk",
+      "logging",
+      "elasticsearch"
+    ],
+    "prereqIds": [
+      44
+    ]
+  },
+  {
+    "id": 51,
+    "title": "Advanced Kubernetes",
+    "domain": "DevOps",
+    "level": "Advanced",
+    "durationHours": 45,
+    "tags": [
+      "kubernetes",
+      "advanced",
+      "production"
+    ],
+    "prereqIds": [
+      44
+    ]
+  },
+  {
+    "id": 52,
+    "title": "Service Mesh with Istio",
+    "domain": "DevOps",
+    "level": "Advanced",
+    "durationHours": 35,
+    "tags": [
+      "istio",
+      "service-mesh",
+      "kubernetes"
+    ],
+    "prereqIds": [
+      51
+    ]
+  },
+  {
+    "id": 53,
+    "title": "GitOps with ArgoCD",
+    "domain": "DevOps",
+    "level": "Advanced",
+    "durationHours": 30,
+    "tags": [
+      "gitops",
+      "argocd",
+      "kubernetes"
+    ],
+    "prereqIds": [
+      44,
+      42
+    ]
+  },
+  {
+    "id": 54,
+    "title": "Site Reliability Engineering",
+    "domain": "DevOps",
+    "level": "Advanced",
+    "durationHours": 40,
+    "tags": [
+      "sre",
+      "reliability",
+      "monitoring"
+    ],
+    "prereqIds": [
+      49
+    ]
+  },
+  {
+    "id": 55,
+    "title": "Cloud Native Applications",
+    "domain": "DevOps",
+    "level": "Advanced",
+    "durationHours": 50,
+    "tags": [
+      "cloud-native",
+      "microservices",
+      "kubernetes"
+    ],
+    "prereqIds": [
+      51
+    ]
+  },
+  {
+    "id": 56,
+    "title": "AWS Fundamentals",
+    "domain": "Cloud",
+    "level": "Beginner",
+    "durationHours": 30,
+    "tags": [
+      "aws",
+      "cloud",
+      "basics"
+    ],
+    "prereqIds": []
+  },
+  {
+    "id": 57,
+    "title": "AWS EC2 and Networking",
+    "domain": "Cloud",
+    "level": "Intermediate",
+    "durationHours": 35,
+    "tags": [
+      "aws",
+      "ec2",
+      "networking"
+    ],
+    "prereqIds": [
+      56
+    ]
+  },
+  {
+    "id": 58,
+    "title": "AWS S3 and Storage",
+    "domain": "Cloud",
+    "level": "Intermediate",
+    "durationHours": 25,
+    "tags": [
+      "aws",
+      "s3",
+      "storage"
+    ],
+    "prereqIds": [
+      56
+    ]
+  },
+  {
+    "id": 59,
+    "title": "AWS Lambda Serverless",
+    "domain": "Cloud",
+    "level": "Intermediate",
+    "durationHours": 30,
+    "tags": [
+      "aws",
+      "lambda",
+      "serverless"
+    ],
+    "prereqIds": [
+      56
+    ]
+  },
+  {
+    "id": 60,
+    "title": "Azure Fundamentals",
+    "domain": "Cloud",
+    "level": "Beginner",
+    "durationHours": 30,
+    "tags": [
+      "azure",
+      "cloud",
+      "microsoft"
+    ],
+    "prereqIds": []
+  },
+  {
+    "id": 61,
+    "title": "Google Cloud Platform Basics",
+    "domain": "Cloud",
+    "level": "Beginner",
+    "durationHours": 30,
+    "tags": [
+      "gcp",
+      "cloud",
+      "google"
+    ],
+    "prereqIds": []
+  },
+  {
+    "id": 62,
+    "title": "AWS Solutions Architect",
+    "domain": "Cloud",
+    "level": "Advanced",
+    "durationHours": 60,
+    "tags": [
+      "aws",
+      "architecture",
+      "design"
+    ],
+    "prereqIds": [
+      57,
+      58,
+      59
+    ]
+  },
+  {
+    "id": 63,
+    "title": "Multi-Cloud Strategy",
+    "domain": "Cloud",
+    "level": "Advanced",
+    "durationHours": 40,
+    "tags": [
+      "multi-cloud",
+      "aws",
+      "azure",
+      "gcp"
+    ],
+    "prereqIds": [
+      56,
+      60,
+      61
+    ]
+  },
+  {
+    "id": 64,
+    "title": "Cloud Security",
+    "domain": "Cloud",
+    "level": "Advanced",
+    "durationHours": 45,
+    "tags": [
+      "cloud-security",
+      "aws",
+      "compliance"
+    ],
+    "prereqIds": [
+      56
+    ]
+  },
+  {
+    "id": 65,
+    "title": "Cloud Cost Optimization",
+    "domain": "Cloud",
+    "level": "Intermediate",
+    "durationHours": 25,
+    "tags": [
+      "cost-optimization",
+      "cloud",
+      "finops"
+    ],
+    "prereqIds": [
+      56
+    ]
+  },
+  {
+    "id": 66,
+    "title": "Android Development with Kotlin",
+    "domain": "Mobile",
+    "level": "Beginner",
+    "durationHours": 50,
+    "tags": [
+      "android",
+      "kotlin",
+      "mobile"
+    ],
+    "prereqIds": []
+  },
+  {
+    "id": 67,
+    "title": "iOS Development with Swift",
+    "domain": "Mobile",
+    "level": "Beginner",
+    "durationHours": 50,
+    "tags": [
+      "ios",
+      "swift",
+      "mobile"
+    ],
+    "prereqIds": []
+  },
+  {
+    "id": 68,
+    "title": "React Native Cross-Platform",
+    "domain": "Mobile",
+    "level": "Intermediate",
+    "durationHours": 45,
+    "tags": [
+      "react-native",
+      "mobile",
+      "cross-platform"
+    ],
+    "prereqIds": [
+      26
+    ]
+  },
+  {
+    "id": 69,
+    "title": "Flutter Development",
+    "domain": "Mobile",
+    "level": "Intermediate",
+    "durationHours": 45,
+    "tags": [
+      "flutter",
+      "dart",
+      "mobile"
+    ],
+    "prereqIds": []
+  },
+  {
+    "id": 70,
+    "title": "Mobile UI/UX Design",
+    "domain": "Mobile",
+    "level": "Beginner",
+    "durationHours": 25,
+    "tags": [
+      "ui-ux",
+      "mobile",
+      "design"
+    ],
+    "prereqIds": []
+  },
+  {
+    "id": 71,
+    "title": "Advanced Android Architecture",
+    "domain": "Mobile",
+    "level": "Advanced",
+    "durationHours": 40,
+    "tags": [
+      "android",
+      "architecture",
+      "mvvm"
+    ],
+    "prereqIds": [
+      66
+    ]
+  },
+  {
+    "id": 72,
+    "title": "iOS App Store Publishing",
+    "domain": "Mobile",
+    "level": "Intermediate",
+    "durationHours": 20,
+    "tags": [
+      "ios",
+      "publishing",
+      "app-store"
+    ],
+    "prereqIds": [
+      67
+    ]
+  },
+  {
+    "id": 73,
+    "title": "Mobile App Testing",
+    "domain": "Mobile",
+    "level": "Intermediate",
+    "durationHours": 30,
+    "tags": [
+      "testing",
+      "mobile",
+      "automation"
+    ],
+    "prereqIds": [
+      66
+    ]
+  },
+  {
+    "id": 74,
+    "title": "Push Notifications",
+    "domain": "Mobile",
+    "level": "Intermediate",
+    "durationHours": 20,
+    "tags": [
+      "push-notifications",
+      "mobile",
+      "firebase"
+    ],
+    "prereqIds": [
+      66
+    ]
+  },
+  {
+    "id": 75,
+    "title": "Mobile App Performance",
+    "domain": "Mobile",
+    "level": "Advanced",
+    "durationHours": 25,
+    "tags": [
+      "performance",
+      "mobile",
+      "optimization"
+    ],
+    "prereqIds": [
+      66
+    ]
+  },
+  {
+    "id": 76,
+    "title": "Cybersecurity Fundamentals",
+    "domain": "Cybersecurity",
+    "level": "Beginner",
+    "durationHours": 30,
+    "tags": [
+      "security",
+      "basics",
+      "cyber"
+    ],
+    "prereqIds": []
+  },
+  {
+    "id": 77,
+    "title": "Network Security",
+    "domain": "Cybersecurity",
+    "level": "Intermediate",
+    "durationHours": 35,
+    "tags": [
+      "network-security",
+      "firewall",
+      "protocols"
+    ],
+    "prereqIds": [
+      76
+    ]
+  },
+  {
+    "id": 78,
+    "title": "Ethical Hacking",
+    "domain": "Cybersecurity",
+    "level": "Intermediate",
+    "durationHours": 40,
+    "tags": [
+      "ethical-hacking",
+      "penetration-testing",
+      "security"
+    ],
+    "prereqIds": [
+      76
+    ]
+  },
+  {
+    "id": 79,
+    "title": "Cryptography Essentials",
+    "domain": "Cybersecurity",
+    "level": "Intermediate",
+    "durationHours": 30,
+    "tags": [
+      "cryptography",
+      "encryption",
+      "security"
+    ],
+    "prereqIds": [
+      76
+    ]
+  },
+  {
+    "id": 80,
+    "title": "Web Application Security",
+    "domain": "Cybersecurity",
+    "level": "Advanced",
+    "durationHours": 35,
+    "tags": [
+      "web-security",
+      "owasp",
+      "vulnerabilities"
+    ],
+    "prereqIds": [
+      40
+    ]
+  },
+  {
+    "id": 81,
+    "title": "Cloud Security Architecture",
+    "domain": "Cybersecurity",
+    "level": "Advanced",
+    "durationHours": 40,
+    "tags": [
+      "cloud-security",
+      "architecture",
+      "compliance"
+    ],
+    "prereqIds": [
+      56,
+      76
+    ]
+  },
+  {
+    "id": 82,
+    "title": "Security Operations Center",
+    "domain": "Cybersecurity",
+    "level": "Advanced",
+    "durationHours": 45,
+    "tags": [
+      "soc",
+      "incident-response",
+      "monitoring"
+    ],
+    "prereqIds": [
+      77
+    ]
+  },
+  {
+    "id": 83,
+    "title": "Malware Analysis",
+    "domain": "Cybersecurity",
+    "level": "Advanced",
+    "durationHours": 40,
+    "tags": [
+      "malware",
+      "reverse-engineering",
+      "analysis"
+    ],
+    "prereqIds": [
+      78
+    ]
+  },
+  {
+    "id": 84,
+    "title": "Identity and Access Management",
+    "domain": "Cybersecurity",
+    "level": "Intermediate",
+    "durationHours": 30,
+    "tags": [
+      "iam",
+      "authentication",
+      "authorization"
+    ],
+    "prereqIds": [
+      76
+    ]
+  },
+  {
+    "id": 85,
+    "title": "Security Compliance and Auditing",
+    "domain": "Cybersecurity",
+    "level": "Advanced",
+    "durationHours": 35,
+    "tags": [
+      "compliance",
+      "auditing",
+      "governance"
+    ],
+    "prereqIds": [
+      76
+    ]
+  },
+  {
+    "id": 86,
+    "title": "PostgreSQL Fundamentals",
+    "domain": "Database",
+    "level": "Beginner",
+    "durationHours": 30,
+    "tags": [
+      "postgresql",
+      "sql",
+      "database"
+    ],
+    "prereqIds": []
+  },
+  {
+    "id": 87,
+    "title": "Database Design and Normalization",
+    "domain": "Database",
+    "level": "Intermediate",
+    "durationHours": 25,
+    "tags": [
+      "database-design",
+      "normalization",
+      "schema"
+    ],
+    "prereqIds": [
+      86
+    ]
+  },
+  {
+    "id": 88,
+    "title": "Advanced SQL Queries",
+    "domain": "Database",
+    "level": "Intermediate",
+    "durationHours": 30,
+    "tags": [
+      "sql",
+      "queries",
+      "optimization"
+    ],
+    "prereqIds": [
+      86
+    ]
+  },
+  {
+    "id": 89,
+    "title": "Database Performance Tuning",
+    "domain": "Database",
+    "level": "Advanced",
+    "durationHours": 35,
+    "tags": [
+      "performance",
+      "indexing",
+      "optimization"
+    ],
+    "prereqIds": [
+      88
+    ]
+  },
+  {
+    "id": 90,
+    "title": "Redis and Caching Strategies",
+    "domain": "Database",
+    "level": "Intermediate",
+    "durationHours": 25,
+    "tags": [
+      "redis",
+      "caching",
+      "nosql"
+    ],
+    "prereqIds": []
+  },
+  {
+    "id": 91,
+    "title": "Database Replication",
+    "domain": "Database",
+    "level": "Advanced",
+    "durationHours": 30,
+    "tags": [
+      "replication",
+      "high-availability",
+      "database"
+    ],
+    "prereqIds": [
+      86
+    ]
+  },
+  {
+    "id": 92,
+    "title": "Data Modeling Best Practices",
+    "domain": "Database",
+    "level": "Intermediate",
+    "durationHours": 25,
+    "tags": [
+      "data-modeling",
+      "design",
+      "architecture"
+    ],
+    "prereqIds": [
+      87
+    ]
+  },
+  {
+    "id": 93,
+    "title": "AI Ethics and Responsible AI",
+    "domain": "AI",
+    "level": "Beginner",
+    "durationHours": 15,
+    "tags": [
+      "ai-ethics",
+      "responsible-ai",
+      "bias"
+    ],
+    "prereqIds": []
+  },
+  {
+    "id": 94,
+    "title": "Generative AI Fundamentals",
+    "domain": "AI",
+    "level": "Intermediate",
+    "durationHours": 30,
+    "tags": [
+      "generative-ai",
+      "llm",
+      "gpt"
+    ],
+    "prereqIds": [
+      7
+    ]
+  },
+  {
+    "id": 95,
+    "title": "Prompt Engineering",
+    "domain": "AI",
+    "level": "Beginner",
+    "durationHours": 20,
+    "tags": [
+      "prompt-engineering",
+      "llm",
+      "ai"
+    ],
+    "prereqIds": []
+  },
+  {
+    "id": 96,
+    "title": "LangChain for LLM Applications",
+    "domain": "AI",
+    "level": "Intermediate",
+    "durationHours": 35,
+    "tags": [
+      "langchain",
+      "llm",
+      "applications"
+    ],
+    "prereqIds": [
+      94,
+      95
+    ]
+  },
+  {
+    "id": 97,
+    "title": "RAG Systems",
+    "domain": "AI",
+    "level": "Advanced",
+    "durationHours": 40,
+    "tags": [
+      "rag",
+      "retrieval",
+      "llm",
+      "embeddings"
+    ],
+    "prereqIds": [
+      96
+    ]
+  },
+  {
+    "id": 98,
+    "title": "Fine-tuning LLMs",
+    "domain": "AI",
+    "level": "Advanced",
+    "durationHours": 45,
+    "tags": [
+      "fine-tuning",
+      "llm",
+      "transfer-learning"
+    ],
+    "prereqIds": [
+      94
+    ]
+  },
+  {
+    "id": 99,
+    "title": "AI Model Evaluation",
+    "domain": "AI",
+    "level": "Intermediate",
+    "durationHours": 25,
+    "tags": [
+      "evaluation",
+      "metrics",
+      "ml"
+    ],
+    "prereqIds": [
+      7
+    ]
+  },
+  {
+    "id": 100,
+    "title": "MLOps and Model Monitoring",
+    "domain": "AI",
+    "level": "Advanced",
+    "durationHours": 40,
+    "tags": [
+      "mlops",
+      "monitoring",
+      "production"
+    ],
+    "prereqIds": [
+      16,
+      99
+    ]
+  }
+]
