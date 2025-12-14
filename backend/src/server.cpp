@@ -78,20 +78,34 @@ int main() {
 	auto& cors = app.get_middleware<crow::CORSHandler>();
 	cors
 		.global()
-		.origin("http://localhost:8000")
-		.methods(HTTP_GET, HTTP_POST, HTTP_DELETE)
+		.origin("http://localhost:3000")
+		.methods(HTTP_GET, HTTP_POST, HTTP_DELETE, crow::HTTPMethod::Options)
+		.headers("Content-Type", "Authorization")
 		.allow_credentials();
+
+	std::cout << "CORS enabled for: http://localhost:3000" << std::endl;
 
 	// GET all courses
 	CROW_ROUTE(app, "/api/courses").methods(HTTP_GET)
 		([&]() {
+			std::cout << "\n[REQUEST] GET /api/courses" << std::endl;
 			json response = coursesToJson(cachedCourses);
-			return crow::response(response.dump());
+			std::string responseStr = response.dump();
+			std::cout << "[RESPONSE] 200 OK - " << cachedCourses.size() << " courses, "
+			          << responseStr.length() << " bytes" << std::endl;
+			std::cout << "[SAMPLE] " << responseStr.substr(0, 200) << "..." << std::endl;
+
+			crow::response res(200, responseStr);
+			res.set_header("Content-Type", "application/json");
+			res.set_header("Access-Control-Allow-Origin", "http://localhost:3000");
+			res.set_header("Access-Control-Allow-Credentials", "true");
+			return res;
 		});
 
 	// GET all unique tags from courses
 	CROW_ROUTE(app, "/api/tags").methods(HTTP_GET)
 		([&]() {
+			std::cout << "\n[REQUEST] GET /api/tags" << std::endl;
 			std::set<std::string> uniqueTags;
 			for (const auto& course : cachedCourses) {
 				const auto& tags = course.getTags();
@@ -101,35 +115,126 @@ int main() {
 			for (const auto& tag : uniqueTags) {
 				tagsArray.push_back(tag);
 			}
-			return crow::response(tagsArray.dump());
+			std::string responseStr = tagsArray.dump();
+			std::cout << "[RESPONSE] 200 OK - " << uniqueTags.size() << " unique tags" << std::endl;
+			std::cout << "[SAMPLE] " << responseStr.substr(0, 200) << "..." << std::endl;
+
+			crow::response res(200, responseStr);
+			res.set_header("Content-Type", "application/json");
+			res.set_header("Access-Control-Allow-Origin", "http://localhost:3000");
+			res.set_header("Access-Control-Allow-Credentials", "true");
+			return res;
 		});
 
 	// POST recommendation request
 	CROW_ROUTE(app, "/api/recommendations").methods(HTTP_POST)
 		([&](const crow::request& req) {
+			std::cout << "\n[REQUEST] POST /api/recommendations" << std::endl;
+			std::cout << "[BODY] " << req.body.substr(0, 500) << std::endl;
 			try {
 				auto data = json::parse(req.body);
 				UserProfile profile = jsonToProfile(data["profile"]);
+				std::cout << "[PROFILE] User " << profile.getUserId()
+				          << ", Domain: " << profile.getTargetDomain()
+				          << ", Level: " << profile.getCurrentLevel() << std::endl;
 				auto plan = recommender.makePlan(profile, cachedCourses);
+				std::cout << "[PLAN] Generated " << plan.getSteps().size()
+				          << " steps, " << plan.getTotalHours() << " hours" << std::endl;
 				storage.savePlan(profile.getUserId(), plan);
-				json response = planToJson(plan);
-				return crow::response(200, response.dump());
+
+				// Enrich plan with full course details
+				json enrichedPlan;
+				enrichedPlan["totalHours"] = plan.getTotalHours();
+				json stepsArray = json::array();
+
+				for (const auto& step : plan.getSteps()) {
+					json stepJson;
+					stepJson["step"] = step.step;
+					stepJson["courseId"] = step.courseId;
+					stepJson["hours"] = step.hours;
+					stepJson["note"] = step.note;
+
+					// Find and add full course details
+					for (const auto& course : cachedCourses) {
+						if (course.getId() == step.courseId) {
+							stepJson["courseTitle"] = course.getTitle();
+							stepJson["courseDomain"] = course.getDomain();
+							stepJson["courseLevel"] = course.getLevel();
+							stepJson["courseTags"] = course.getTags();
+							break;
+						}
+					}
+					stepsArray.push_back(stepJson);
+				}
+				enrichedPlan["steps"] = stepsArray;
+
+				std::string responseStr = enrichedPlan.dump();
+				std::cout << "[RESPONSE] 200 OK - " << responseStr.length() << " bytes (enriched)" << std::endl;
+				crow::response res(200, responseStr);
+				res.set_header("Content-Type", "application/json");
+				res.set_header("Access-Control-Allow-Origin", "http://localhost:3000");
+				res.set_header("Access-Control-Allow-Credentials", "true");
+				return res;
 			} catch (const std::exception& e) {
+				std::cerr << "[ERROR] " << e.what() << std::endl;
 				json error = {{"error", e.what()}};
-				return crow::response(400, error.dump());
+				crow::response res(400, error.dump());
+				res.set_header("Content-Type", "application/json");
+				res.set_header("Access-Control-Allow-Origin", "http://localhost:3000");
+				return res;
 			}
 		});
 
 	// GET plan by userId
 	CROW_ROUTE(app, "/api/plans/<int>").methods(HTTP_GET)
 		([&](int userId) {
+			std::cout << "\n[REQUEST] GET /api/plans/" << userId << std::endl;
 			auto plan = storage.loadPlan(userId);
 			if (plan.has_value()) {
-				json response = planToJson(plan.value());
-				return crow::response(200, response.dump());
+				std::cout << "[PLAN] Found plan with " << plan.value().getSteps().size()
+				          << " steps, " << plan.value().getTotalHours() << " hours" << std::endl;
+
+				// Enrich plan with full course details (same as POST /recommendations)
+				json enrichedPlan;
+				enrichedPlan["totalHours"] = plan.value().getTotalHours();
+				json stepsArray = json::array();
+
+				for (const auto& step : plan.value().getSteps()) {
+					json stepJson;
+					stepJson["step"] = step.step;
+					stepJson["courseId"] = step.courseId;
+					stepJson["hours"] = step.hours;
+					stepJson["note"] = step.note;
+
+					// Find and add full course details
+					for (const auto& course : cachedCourses) {
+						if (course.getId() == step.courseId) {
+							stepJson["courseTitle"] = course.getTitle();
+							stepJson["courseDomain"] = course.getDomain();
+							stepJson["courseLevel"] = course.getLevel();
+							stepJson["courseTags"] = course.getTags();
+							break;
+						}
+					}
+					stepsArray.push_back(stepJson);
+				}
+				enrichedPlan["steps"] = stepsArray;
+
+				std::string responseStr = enrichedPlan.dump();
+				std::cout << "[RESPONSE] 200 OK - " << responseStr.length() << " bytes (enriched)" << std::endl;
+
+				crow::response res(200, responseStr);
+				res.set_header("Content-Type", "application/json");
+				res.set_header("Access-Control-Allow-Origin", "http://localhost:3000");
+				res.set_header("Access-Control-Allow-Credentials", "true");
+				return res;
 			} else {
+				std::cout << "[RESPONSE] 404 Not Found - No plan for user " << userId << std::endl;
 				json error = {{"error", "Plan not found"}};
-				return crow::response(404, error.dump());
+				crow::response res(404, error.dump());
+				res.set_header("Content-Type", "application/json");
+				res.set_header("Access-Control-Allow-Origin", "http://localhost:3000");
+				return res;
 			}
 		});
 
@@ -178,11 +283,13 @@ int main() {
 	// Auth endpoints
 	CROW_ROUTE(app, "/api/auth/register").methods(HTTP_POST)
 		([&](const crow::request& req) {
+			std::cout << "\n[REQUEST] POST /api/auth/register" << std::endl;
 			try {
 				auto data = json::parse(req.body);
 				std::string username = data["username"];
 				std::string email = data["email"];
 				std::string password = data["password"];
+				std::cout << "[AUTH] Registering user: " << username << " (" << email << ")" << std::endl;
 
 				// Simple auth - store in database
 				storage.saveUser(username, email, password);
@@ -192,19 +299,31 @@ int main() {
 					{"username", username},
 					{"token", username} // Simple token for demo
 				};
-				return crow::response(200, response.dump());
+				std::string responseStr = response.dump();
+				std::cout << "[RESPONSE] 200 OK - User registered" << std::endl;
+				crow::response res(200, responseStr);
+				res.set_header("Content-Type", "application/json");
+				res.set_header("Access-Control-Allow-Origin", "http://localhost:3000");
+				res.set_header("Access-Control-Allow-Credentials", "true");
+				return res;
 			} catch (const std::exception& e) {
+				std::cerr << "[ERROR] Registration failed: " << e.what() << std::endl;
 				json error = {{"error", e.what()}};
-				return crow::response(400, error.dump());
+				crow::response res(400, error.dump());
+				res.set_header("Content-Type", "application/json");
+				res.set_header("Access-Control-Allow-Origin", "http://localhost:3000");
+				return res;
 			}
 		});
 
 	CROW_ROUTE(app, "/api/auth/login").methods(HTTP_POST)
 		([&](const crow::request& req) {
+			std::cout << "\n[REQUEST] POST /api/auth/login" << std::endl;
 			try {
 				auto data = json::parse(req.body);
 				std::string username = data["username"];
 				std::string password = data["password"];
+				std::cout << "[AUTH] Login attempt for user: " << username << std::endl;
 
 				// Simple auth - validate from database
 				bool valid = storage.validateUser(username, password);
@@ -215,14 +334,28 @@ int main() {
 						{"username", username},
 						{"token", username}
 					};
-					return crow::response(200, response.dump());
+					std::string responseStr = response.dump();
+					std::cout << "[RESPONSE] 200 OK - Login successful" << std::endl;
+					crow::response res(200, responseStr);
+					res.set_header("Content-Type", "application/json");
+					res.set_header("Access-Control-Allow-Origin", "http://localhost:3000");
+					res.set_header("Access-Control-Allow-Credentials", "true");
+					return res;
 				} else {
+					std::cout << "[RESPONSE] 401 Unauthorized - Invalid credentials" << std::endl;
 					json error = {{"error", "Invalid credentials"}};
-					return crow::response(401, error.dump());
+					crow::response res(401, error.dump());
+					res.set_header("Content-Type", "application/json");
+					res.set_header("Access-Control-Allow-Origin", "http://localhost:3000");
+					return res;
 				}
 			} catch (const std::exception& e) {
+				std::cerr << "[ERROR] Login failed: " << e.what() << std::endl;
 				json error = {{"error", e.what()}};
-				return crow::response(400, error.dump());
+				crow::response res(400, error.dump());
+				res.set_header("Content-Type", "application/json");
+				res.set_header("Access-Control-Allow-Origin", "http://localhost:3000");
+				return res;
 			}
 		});
 
@@ -249,7 +382,9 @@ int main() {
 	// Health check
 	CROW_ROUTE(app, "/api/health").methods(HTTP_GET)
 		([]() {
+			std::cout << "\n[REQUEST] GET /api/health" << std::endl;
 			json response = {{"status", "ok"}, {"version", "1.0"}};
+			std::cout << "[RESPONSE] 200 OK - Health check passed" << std::endl;
 			return crow::response(200, response.dump());
 		});
 

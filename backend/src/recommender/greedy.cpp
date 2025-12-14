@@ -9,9 +9,23 @@ Plan GreedyRecommender::makePlan(const UserProfile& profile, const std::vector<C
 
     int totalAvailableHours = profile.getHoursPerWeek() * profile.getDeadlineWeeks();
 
-    // Score all courses
-    std::vector<std::pair<double, Course>> scoredCourses;
+    // Filter courses by domain FIRST (strict requirement)
+    std::vector<Course> relevantCourses;
     for (const auto& course : allCourses) {
+        // Only include courses from the target domain or closely related domains
+        if (course.getDomain() == profile.getTargetDomain()) {
+            relevantCourses.push_back(course);
+        }
+        // For AI/Data Science - they're related, allow cross-domain
+        else if ((profile.getTargetDomain() == "AI" && course.getDomain() == "Data Science") ||
+                 (profile.getTargetDomain() == "Data Science" && course.getDomain() == "AI")) {
+            relevantCourses.push_back(course);
+        }
+    }
+
+    // Score filtered courses
+    std::vector<std::pair<double, Course>> scoredCourses;
+    for (const auto& course : relevantCourses) {
         double score = scorer.matchScore(course, profile);
         scoredCourses.push_back({score, course});
     }

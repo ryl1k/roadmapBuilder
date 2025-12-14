@@ -93,13 +93,13 @@ void PostgresStorage::saveUser(const std::string& username, const std::string& e
 		pqxx::work txn(*conn);
 
 		std::string hash = hashPassword(password);
-		txn.exec_params(
+		txn.exec(
 			"INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3)",
-			username, email, hash
+			pqxx::params(username, email, hash)
 		);
 
 		txn.commit();
-	} catch (const pqxx::unique_violation& e) {
+	} catch (const pqxx::unique_violation&) {
 		throw std::runtime_error("Username or email already exists");
 	} catch (const std::exception& e) {
 		throw std::runtime_error("Failed to create user: " + std::string(e.what()));
@@ -111,9 +111,9 @@ bool PostgresStorage::validateUser(const std::string& username, const std::strin
 		reconnect();
 		pqxx::work txn(*conn);
 
-		auto result = txn.exec_params(
+		auto result = txn.exec(
 			"SELECT password_hash FROM users WHERE username = $1",
-			username
+			pqxx::params(username)
 		);
 
 		if (result.empty()) {
@@ -133,9 +133,9 @@ std::optional<json> PostgresStorage::getUser(const std::string& username) {
 		reconnect();
 		pqxx::work txn(*conn);
 
-		auto result = txn.exec_params(
+		auto result = txn.exec(
 			"SELECT id, username, email FROM users WHERE username = $1",
-			username
+			pqxx::params(username)
 		);
 
 		if (result.empty()) {
@@ -161,20 +161,20 @@ void PostgresStorage::savePlan(int userId, const Plan& plan) {
 		pqxx::work txn(*conn);
 
 		// Delete existing plan
-		txn.exec_params("DELETE FROM plan_steps WHERE user_id = $1", userId);
-		txn.exec_params("DELETE FROM plans WHERE user_id = $1", userId);
+		txn.exec("DELETE FROM plan_steps WHERE user_id = $1", pqxx::params(userId));
+		txn.exec("DELETE FROM plans WHERE user_id = $1", pqxx::params(userId));
 
 		// Insert new plan
-		txn.exec_params(
+		txn.exec(
 			"INSERT INTO plans (user_id, total_hours) VALUES ($1, $2)",
-			userId, plan.getTotalHours()
+			pqxx::params(userId, plan.getTotalHours())
 		);
 
 		// Insert steps
 		for (const auto& step : plan.getSteps()) {
-			txn.exec_params(
+			txn.exec(
 				"INSERT INTO plan_steps (user_id, step, course_id, hours, note) VALUES ($1, $2, $3, $4, $5)",
-				userId, step.step, step.courseId, step.hours, step.note
+				pqxx::params(userId, step.step, step.courseId, step.hours, step.note)
 			);
 		}
 
@@ -190,9 +190,9 @@ std::optional<Plan> PostgresStorage::loadPlan(int userId) {
 		pqxx::work txn(*conn);
 
 		// Get plan
-		auto planResult = txn.exec_params(
+		auto planResult = txn.exec(
 			"SELECT total_hours FROM plans WHERE user_id = $1",
-			userId
+			pqxx::params(userId)
 		);
 
 		if (planResult.empty()) {
@@ -203,9 +203,9 @@ std::optional<Plan> PostgresStorage::loadPlan(int userId) {
 		plan.setTotalHours(planResult[0][0].as<int>());
 
 		// Get steps
-		auto stepsResult = txn.exec_params(
+		auto stepsResult = txn.exec(
 			"SELECT step, course_id, hours, note FROM plan_steps WHERE user_id = $1 ORDER BY step",
-			userId
+			pqxx::params(userId)
 		);
 
 		std::vector<PlanStep> steps;

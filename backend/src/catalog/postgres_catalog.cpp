@@ -97,9 +97,9 @@ void PostgresCatalog::importFromJson(const std::string& jsonPath) {
 			}
 			prereqArray += "}";
 
-			txn.exec_params(
+			txn.exec(
 				"INSERT INTO courses (id, title, domain, level, duration_hours, tags, prereq_ids) VALUES ($1, $2, $3, $4, $5, $6::text[], $7::integer[])",
-				id, title, domain, level, duration, tagsArray, prereqArray
+				pqxx::params(id, title, domain, level, duration, tagsArray, prereqArray)
 			);
 		}
 
@@ -161,7 +161,7 @@ std::vector<Course> PostgresCatalog::getAll() {
 					prereqs.push_back(std::stoi(prereqStr));
 				}
 			}
-			course.setPrereqIds(prereqs);
+			course.setPrerequisiteCourseIds(prereqs);
 
 			courses.push_back(course);
 		}
