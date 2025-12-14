@@ -32,15 +32,28 @@
                     No plans created yet. <a href="/recommend" class="text-purple-400 hover:underline">Create your first plan!</a>
                 </div>
                 <div x-show="plans.length > 0" class="space-y-3">
-                    <template x-for="plan in plans" :key="plan.id">
-                        <div class="p-4 bg-gray-900/50 rounded-lg border border-gray-700 flex justify-between items-center">
-                            <div>
-                                <div class="font-semibold" x-text="'Plan #' + plan.id"></div>
-                                <div class="text-sm text-gray-400" x-text="plan.totalHours + ' total hours'"></div>
+                    <template x-for="(plan, idx) in plans" :key="idx">
+                        <div class="p-4 bg-gray-900/50 rounded-lg border border-gray-700">
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <div class="font-semibold text-lg">Learning Roadmap</div>
+                                    <div class="text-sm text-gray-400" x-text="plan.totalHours + ' total hours · ' + (plan.steps?.length || 0) + ' courses'"></div>
+                                </div>
+                                <a href="/plan" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition text-sm">
+                                    View Details
+                                </a>
                             </div>
-                            <a :href="'/plan?userId=' + plan.userId" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition">
-                                View Plan
-                            </a>
+                            <div class="space-y-2" x-show="plan.steps">
+                                <template x-for="(step, stepIdx) in (plan.steps || []).slice(0, 3)" :key="stepIdx">
+                                    <div class="text-sm text-gray-400">
+                                        <span class="text-purple-400" x-text="step.step + '.'"></span>
+                                        <span x-text="step.courseTitle || 'Course #' + step.courseId"></span>
+                                    </div>
+                                </template>
+                                <div x-show="plan.steps && plan.steps.length > 3" class="text-sm text-gray-500">
+                                    + <span x-text="plan.steps.length - 3"></span> more courses...
+                                </div>
+                            </div>
                         </div>
                     </template>
                 </div>
@@ -67,21 +80,43 @@ function profileData() {
             const token = localStorage.getItem('token');
             const storedUser = localStorage.getItem('user');
 
-            if (!token || !storedUser) {
-                this.loading = false;
-                return;
-            }
-
             try {
-                const response = await fetch('{{ backend_url }}/auth/me', {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
+                // Try to load user info if authenticated
+                if (token && storedUser) {
+                    try {
+                        const userResponse = await fetch('{{ backend_url }}/auth/me', {
+                            headers: { 'Authorization': 'Bearer ' + token }
+                        });
 
-                if (response.ok) {
-                    this.user = await response.json();
+                        if (userResponse.ok) {
+                            this.user = await userResponse.json();
+                        } else {
+                            // If auth fails, use stored user or default
+                            this.user = JSON.parse(storedUser);
+                        }
+                    } catch (authErr) {
+                        console.error('Auth failed, using stored user:', authErr);
+                        this.user = JSON.parse(storedUser);
+                    }
                 } else {
-                    localStorage.removeItem('user');
-                    localStorage.removeItem('token');
+                    // No auth, use default user
+                    this.user = { id: 1, username: 'Guest', email: 'guest@example.com' };
+                }
+
+                // Always try to load plan (hardcoded to userId 1 for demo)
+                const userId = this.user?.id || 1;
+                console.log('Fetching plan for user:', userId);
+
+                const planResponse = await fetch('{{ backend_url }}/plans/' + userId);
+                console.log('Plan response status:', planResponse.status);
+
+                if (planResponse.ok) {
+                    const plan = await planResponse.json();
+                    console.log('Loaded plan:', plan);
+                    this.plans = [plan];
+                } else {
+                    console.log('No plan found or error loading plan');
+                    this.plans = [];
                 }
             } catch (err) {
                 console.error('Failed to load profile:', err);

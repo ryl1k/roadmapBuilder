@@ -4,6 +4,66 @@
 
 {% block content %}
 <div class="max-w-5xl mx-auto mt-10 fade-in" x-data="chatData()" x-init="init()">
+    <!-- Course Details Modal -->
+    <div x-show="selectedCourse"
+         x-cloak
+         @click.away="selectedCourse = null"
+         class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div @click.stop class="bg-gray-800 rounded-2xl border border-gray-700 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <template x-if="selectedCourse">
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-2xl font-bold" x-text="selectedCourse.courseTitle"></h3>
+                            <div class="flex gap-2 mt-2">
+                                <span class="px-3 py-1 bg-purple-600/30 rounded text-sm" x-text="selectedCourse.courseDomain"></span>
+                                <span class="px-3 py-1 bg-blue-600/30 rounded text-sm" x-text="selectedCourse.courseLevel"></span>
+                                <span class="px-3 py-1 bg-green-600/30 rounded text-sm" x-text="selectedCourse.hours + ' hours'"></span>
+                            </div>
+                        </div>
+                        <button @click="selectedCourse = null" class="text-gray-400 hover:text-white">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div x-show="selectedCourse.courseTags && selectedCourse.courseTags.length">
+                            <div class="text-sm text-gray-400 mb-2">Skills & Topics:</div>
+                            <div class="flex flex-wrap gap-2">
+                                <template x-for="tag in (selectedCourse.courseTags || [])" :key="tag">
+                                    <span class="px-3 py-1 bg-gray-700 rounded-full text-sm" x-text="tag"></span>
+                                </template>
+                            </div>
+                        </div>
+
+                        <div x-show="selectedCourse.coursePrereqs && selectedCourse.coursePrereqs.length">
+                            <div class="text-sm text-gray-400 mb-2">Prerequisites:</div>
+                            <div class="text-sm text-gray-300">
+                                This course requires completion of <span x-text="selectedCourse.coursePrereqs.length"></span> prerequisite course(s)
+                            </div>
+                        </div>
+
+                        <div x-show="selectedCourse.note">
+                            <div class="text-sm text-gray-400 mb-2">Recommendation Score:</div>
+                            <div class="text-sm text-gray-300" x-text="selectedCourse.note"></div>
+                        </div>
+
+                        <div class="pt-4 border-t border-gray-700">
+                            <div class="text-sm text-gray-400">About this course:</div>
+                            <p class="text-gray-300 mt-2">
+                                This <span x-text="selectedCourse.courseLevel?.toLowerCase()"></span> level course in
+                                <span x-text="selectedCourse.courseDomain"></span> covers essential topics including
+                                <span x-text="(selectedCourse.courseTags || []).slice(0, 3).join(', ')"></span>.
+                                Estimated completion time: <span x-text="selectedCourse.hours"></span> hours.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
     <div class="bg-gray-800/50 backdrop-blur rounded-2xl border border-gray-700 overflow-hidden">
         <!-- Chat Header -->
         <div class="bg-gradient-to-r from-purple-600 to-pink-600 p-6">
@@ -12,7 +72,7 @@
         </div>
 
         <!-- Chat Messages -->
-        <div class="h-[500px] overflow-y-auto p-6 space-y-4" id="chat-container">
+        <div class="h-[700px] overflow-y-auto p-6 space-y-4" id="chat-container">
             <!-- Initial AI Message -->
             <div class="flex gap-3">
                 <div class="flex-shrink-0">
@@ -103,8 +163,19 @@ function chatData() {
         loading: false,
         courses: [],
         availableTags: [],
+        conversationHistory: [],
+        selectedCourse: null,
 
         async init() {
+            // Load conversation from localStorage
+            const saved = localStorage.getItem('chatHistory');
+            if (saved) {
+                try {
+                    this.messages = JSON.parse(saved);
+                } catch (e) {
+                    console.error('Failed to load chat history:', e);
+                }
+            }
             // Load courses and tags for reference
             try {
                 const [coursesRes, tagsRes] = await Promise.all([
@@ -202,18 +273,20 @@ function chatData() {
 
                 plan.steps.forEach((step, idx) => {
                     planHtml += `
-                        <div class="bg-gray-800/50 rounded-lg p-3 border border-gray-600">
+                        <div class="bg-gray-800/50 rounded-lg p-3 border border-gray-600 hover:border-purple-500 transition cursor-pointer"
+                             onclick="window.showCourseDetails(${idx})">
                             <div class="flex items-start gap-3">
                                 <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">
                                     ${step.step}
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <div class="font-semibold">${step.courseTitle || 'Course #' + step.courseId}</div>
+                                    <div class="font-semibold text-gray-100">${step.courseTitle || 'Course #' + step.courseId}</div>
                                     <div class="text-xs text-gray-400 mt-1">
                                         <span class="inline-block px-2 py-1 bg-purple-600/30 rounded">${step.courseLevel || ''}</span>
                                         <span class="ml-2">${step.hours} hours</span>
+                                        <span class="ml-2 text-purple-400">→ Click for details</span>
                                     </div>
-                                    ${step.note ? '<div class="text-sm text-gray-400 mt-1">' + step.note + '</div>' : ''}
+                                    ${step.courseTags ? '<div class="flex flex-wrap gap-1 mt-2">' + step.courseTags.map(tag => '<span class="text-xs px-2 py-0.5 bg-gray-700 rounded">' + tag + '</span>').join('') + '</div>' : ''}
                                 </div>
                             </div>
                         </div>
@@ -221,9 +294,15 @@ function chatData() {
                 });
 
                 planHtml += '</div>';
-                planHtml += `<div class="mt-4 pt-4 border-t border-gray-600">
-                                <p class="text-sm text-gray-400">Need modifications? Just describe what you'd like to change!</p>
+                planHtml += `<div class="mt-4 pt-4 border-t border-gray-600 space-y-2">
+                                <button onclick="savePlan()" class="w-full px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg font-semibold transition">
+                                    💾 Save Plan to Profile
+                                </button>
+                                <p class="text-sm text-gray-400 text-center">Need modifications? Just describe what you'd like to change!</p>
                              </div>`;
+
+                // Store current plan for saving
+                window.currentPlan = plan;
 
                 this.messages.push({
                     role: 'assistant',
@@ -239,6 +318,8 @@ function chatData() {
             } finally {
                 this.loading = false;
                 this.scrollToBottom();
+                // Save conversation history
+                localStorage.setItem('chatHistory', JSON.stringify(this.messages));
             }
         },
 
@@ -250,5 +331,60 @@ function chatData() {
         }
     }
 }
+
+// Show course details in modal
+function showCourseDetails(stepIndex) {
+    if (window.currentPlan && window.currentPlan.steps) {
+        const step = window.currentPlan.steps[stepIndex];
+        // Get Alpine instance and set selectedCourse
+        const alpineEl = document.querySelector('[x-data]');
+        if (alpineEl && alpineEl.__x) {
+            alpineEl.__x.$data.selectedCourse = step;
+        }
+    }
+}
+
+window.showCourseDetails = showCourseDetails;
+
+// Save plan function
+async function savePlan() {
+    if (!window.currentPlan) {
+        alert('No plan to save!');
+        return;
+    }
+
+    try {
+        const userId = 1; // TODO: Get from auth
+        const response = await fetch('{{ backend_url }}/plans/' + userId, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(window.currentPlan)
+        });
+
+        if (response.ok) {
+            alert('✅ Plan saved successfully! You can view it in your profile.');
+        } else {
+            throw new Error('Failed to save');
+        }
+    } catch (err) {
+        alert('❌ Failed to save plan: ' + err.message);
+    }
+}
+
+// Clear conversation
+function clearChat() {
+    if (confirm('Clear all conversation history?')) {
+        localStorage.removeItem('chatHistory');
+        location.reload();
+    }
+}
 </script>
+
+<!-- Clear Chat Button (optional) -->
+<div class="max-w-5xl mx-auto mt-4 text-center">
+    <button onclick="clearChat()" class="text-sm text-gray-500 hover:text-gray-300">
+        Clear Conversation History
+    </button>
+</div>
+
 {% endblock %}

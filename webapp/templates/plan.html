@@ -100,29 +100,71 @@ function planData() {
         aiReasoning: null,
         courses: [],
 
-        loadPlan() {
-            const data = sessionStorage.getItem('currentPlan');
-            if (!data) return;
+        async loadPlan() {
+            console.log('Loading plan...');
 
-            const parsed = JSON.parse(data);
-            this.plan = parsed.plan;
-            this.profile = parsed.profile;
-            this.algorithmUsed = parsed.algorithmUsed;
-            this.aiReasoning = parsed.aiReasoning;
-            this.courses = parsed.courses || [];
+            // Try loading from sessionStorage first (for newly generated plans)
+            const sessionData = sessionStorage.getItem('currentPlan');
+            if (sessionData) {
+                console.log('Loading from sessionStorage');
+                const parsed = JSON.parse(sessionData);
+                this.plan = parsed.plan;
+                this.profile = parsed.profile;
+                this.algorithmUsed = parsed.algorithmUsed;
+                this.aiReasoning = parsed.aiReasoning;
+                this.courses = parsed.courses || [];
+                return;
+            }
+
+            // Otherwise, load from backend
+            console.log('Loading from backend API');
+            try {
+                const userId = 1; // TODO: Get from auth
+                const response = await fetch('{{ backend_url }}/plans/' + userId);
+                console.log('Plan response status:', response.status);
+
+                if (response.ok) {
+                    const plan = await response.json();
+                    console.log('Loaded plan:', plan);
+                    this.plan = plan;
+                    this.profile = { targetDomain: 'AI', currentLevel: 'Intermediate' }; // Default
+                    this.algorithmUsed = 'greedy';
+
+                    // Load courses for reference
+                    const coursesRes = await fetch('{{ backend_url }}/courses');
+                    if (coursesRes.ok) {
+                        this.courses = await coursesRes.json();
+                    }
+                } else {
+                    console.log('No plan found');
+                }
+            } catch (err) {
+                console.error('Failed to load plan:', err);
+            }
         },
 
         getCourseTitle(courseId) {
+            // Check if step already has title (enriched from backend)
+            const step = this.plan?.steps?.find(s => s.courseId === courseId);
+            if (step?.courseTitle) return step.courseTitle;
+
+            // Otherwise look up in courses array
             const course = this.courses.find(c => c.id === courseId);
             return course?.title || 'Unknown Course';
         },
 
         getCourseLevel(courseId) {
+            const step = this.plan?.steps?.find(s => s.courseId === courseId);
+            if (step?.courseLevel) return step.courseLevel;
+
             const course = this.courses.find(c => c.id === courseId);
             return course?.level || '';
         },
 
         getCourseDomain(courseId) {
+            const step = this.plan?.steps?.find(s => s.courseId === courseId);
+            if (step?.courseDomain) return step.courseDomain;
+
             const course = this.courses.find(c => c.id === courseId);
             return course?.domain || '';
         }
